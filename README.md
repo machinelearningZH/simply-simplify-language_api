@@ -27,6 +27,8 @@ With this version you can pip install the core functionality and use language si
 
 - Open the notebook `simple-simplifier.ipynb` and follow the instructions.
 
-## License
+## Feedback and Contributions
 
-`simple-simplifier` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+Please share your feedback. You can [write an email](mailto:datashop@statistik.zh.ch) or share your ideas by opening an issue or a pull requests.
+
+Please note, we use [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting with default settings.
