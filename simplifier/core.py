@@ -2,6 +2,11 @@ import os
 import re
 from dotenv import load_dotenv
 from openai import OpenAI
+from config import (
+    OPENAI_API_KEY,
+    MODEL_NAME,
+    MAX_TOKENS,
+)
 
 from simplifier.utils_prompts import (
     SYSTEM_MESSAGE_ES,
@@ -23,11 +28,10 @@ OPENAI_TEMPLATES = [
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = OPENAI_API_KEY
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-MODEL_NAME = "gpt-4o"
-MAX_TOKENS = 4096
+MAX_TOKENS = int(MAX_TOKENS)
 
 # From our testing we derive a sensible temperature of 0.5 as a good trade-off between creativity and coherence. Adjust this to your needs.
 TEMPERATURE = 0.5
@@ -40,7 +44,6 @@ MAX_CHARS_INPUT = 100_000
 
 # ---------------------------------------------------------------
 # Main functions
-
 
 def _create_prompt(text, prompt_es, prompt_ls, leichte_sprache=False):
     """Create prompt and system message."""
