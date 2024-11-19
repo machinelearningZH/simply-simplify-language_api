@@ -1,18 +1,22 @@
 from jsonpath_ng import parse
-from simplifier.core import simplify_text
-from logger import logger
 from converter.BadFormattingError import BadFormattingError
+
 
 class JsonConverter:
 
-    def __init__(self, json: dict, path: str, root: str, leichte_sprache: bool = False) -> None:
-        self.json = json
-        self.path = path
-        self.root = root
-        self.is_leichte_sprache = leichte_sprache
-        self.sprache = 'leichte_sprache' if leichte_sprache else 'einfache_sprache'
+    def __init__(self, payload, simplifier, model: str = None) -> None:
+
+        self.simplifier = simplifier
+
+        if model:
+            simplifier.set_model(model)
+
+        self.json = payload.data
+        self.path = payload.path
+        self.root = payload.root
+        self.is_leichte_sprache = bool(payload.leichte_sprache)
+        self.sprache = 'leichte_sprache' if self.is_leichte_sprache else 'einfache_sprache'
         self.data = []
-        logger.info(leichte_sprache)
 
     def extract_from_payload(self):
         expression = parse(self.path)
@@ -41,7 +45,7 @@ class JsonConverter:
         values = self.extract_from_payload()
         # Pass through the simplifier
         for index, value in enumerate(values):
-            values[index] = simplify_text(value, self.is_leichte_sprache)
+            values[index] = self.simplifier.simplify_text(value, self.is_leichte_sprache)
 
         return values
 

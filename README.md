@@ -14,11 +14,6 @@ With this version you can pip install the core functionality and use language si
 - Install the requirements: `pip install -r requirements.txt`
 - Export the OpenAI API key as an environment variable: `export OPENAI_API_KEY=your-api-key`
 
-**Install the Simplifier as a package**
-
-- `pip install git+https://github.com/rnckp/simple-simplifier`
-- Alternatively invoke from the cloned project directory: `python -m pip install .`
-
 **Start the FastAPI server**
 
 - `uvicorn fastapi_app:app --reload`
@@ -46,13 +41,14 @@ Request Body
 
 ### Request Body
 
-| Field             | Type               | Required       | Description                                           |
-|-------------------|--------------------|----------------|-------------------------------------------------------|
-| `data`            | `string` or `dict` | Yes            | The input data to be simplified. Can be plain text or a JSON object. |
-| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into plain language.    |
-| `format`          | `string`           | Yes            | Specifies the format of the input. Accepted values are `"json"` or `"text"`. |
+| Field             | Type               | Required       | Description                                                                                  |
+|-------------------|--------------------|----------------|----------------------------------------------------------------------------------------------|
+| `data`            | `string` or `dict` | Yes            | The input data to be simplified. Can be plain text or a JSON object.                         |
+| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into plain language.                                          |
+| `format`          | `string`           | Yes            | Specifies the format of the input. Accepted values are `"json"` or `"text"`.                 |
 | `path`            | `string`           | Yes (for JSON) | The JSON path to target specific parts of the input data (only used if `format` is `"json"`). |
-| `root`            | `string`           | Yes (for JSON) | The root key for the JSON object (only used if `format` is `"json"`). |
+| `root`            | `string`           | Yes (for JSON) | The root key for the JSON object (only used if `format` is `"json"`).                        |
+| `model`           | `gpt-4o`           | No             | Used for testing the OpenAI model, default is `gpt-4o`                                        |
 
 
 ```POST / ```

@@ -1,17 +1,18 @@
-from jsonpath_ng import parse
-from simplifier.core import simplify_text
-
-
 class TextConverter:
 
-    def __init__(self, text: str, leichte_sprache: bool = False, path: str = 'simplified_text') -> None:
-        self.text = text
-        self.path = path
-        self.is_leichte_sprache = leichte_sprache
-        self.sprache = 'leichte_sprache' if leichte_sprache else 'einfache_sprache'
+    def __init__(self, payload, simplifier, model: str = None) -> None:
+        self.simplifier = simplifier
+
+        if model:
+            simplifier.set_model(model)
+
+        self.text = payload.data
+        self.path = payload.path if payload.path else "data"
+        self.is_leichte_sprache = bool(payload.leichte_sprache)
+        self.sprache = 'leichte_sprache' if self.is_leichte_sprache else 'einfache_sprache'
 
     def simplify(self):
-        simplified_text = simplify_text(self.text, self.is_leichte_sprache)
+        simplified_text = self.simplifier.simplify_text(self.text, self.is_leichte_sprache)
         return {
             self.path: simplified_text,
             "simplification": self.sprache

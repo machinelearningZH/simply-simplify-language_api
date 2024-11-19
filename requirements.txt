@@ -6,3 +6,6 @@ fastapi
 uvicorn
 pytest
 pytest-xdist
+jsonpath_ng
+pydantic
+itsdangerous

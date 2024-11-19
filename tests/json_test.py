@@ -1,30 +1,71 @@
+from model.TextPayload import TextPayload
 from converter.JsonConverter import JsonConverter
-from converter.TextConverter import TextConverter
 
-json_example = {
-    "uuid": "1",
-    "type": "section_title",
-    "fields": [
-        {
-            "name": "field_title",
-            "type": "plaintext",
-            "content": "Hello World"
-        },
-        {
-            "name": "field_lead",
-            "type": "markup",
-            "content": "<p>Lorem ipsum dolor</p>"
-        }
-    ]
+json_example1 = {
+    "data": {
+        "uuid": "1",
+        "type": "section_title",
+        "fields": [
+            {
+                "name": "field_title",
+                "type": "plaintext",
+                "content": "Hello World"
+            },
+            {
+                "name": "field_lead",
+                "type": "markup",
+                "content": "<p>Lorem ipsum dolor</p>"
+            }
+        ],
+    },
+    "leichte_sprache": "False",
+    "format": "json",
+    "path": "fields[*].content",
+    "root": "fields"
 }
+
+json_example2 = {
+    "data": {
+        "uuid": "1",
+        "type": "section_title",
+        "fields": [
+            {
+                "name": "field_title",
+                "type": "plaintext",
+                "content": "Hello World"
+            },
+            {
+                "name": "field_lead",
+                "type": "markup",
+                "content": "<p>Lorem ipsum dolor</p>"
+            }
+        ],
+    },
+    "leichte_sprache": "True",
+    "format": "json",
+    "path": "fields[*].content",
+    "root": ""
+}
+
+json1 = TextPayload(**json_example1)
+json2 = TextPayload(**json_example2)
+
+
+def mock_get_simplifier():
+    class MockSimplifier:
+        def simplify_text(self, text, leichte_sprache):
+            if leichte_sprache:
+                return "The text simplified in leichte sprache"
+            else:
+                return "The text simplified in einfache sprache"
+
+    return MockSimplifier()
 
 
 def test_should_extract_values_from_json_with_root():
-    schema = "fields[*].content"
-
     # Create a JsonConverter with the schema we want, to find the content in the JSON
     # Root is the path to which we append back the simplified text
-    converter = JsonConverter(json_example, schema, "fields", False)
+    converter = JsonConverter(json1, mock_get_simplifier())
     values = converter.extract_from_payload()
 
     # Test that the correct values are extracted form the JSON
@@ -60,11 +101,9 @@ def test_should_extract_values_from_json_with_root():
 
 
 def test_should_extract_values_from_json_without_root():
-    schema = "fields[*].content"
-
     # Create a JsonConverter with the schema we want, to find the content in the JSON
     # Root is the path to which we append back the simplified text
-    converter = JsonConverter(json_example, schema, "", True)
+    converter = JsonConverter(json2, mock_get_simplifier())
     values = converter.extract_from_payload()
 
     # Test that the correct values are extracted form the JSON
