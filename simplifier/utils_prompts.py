@@ -41,8 +41,7 @@ RULES_ES = """- Schreibe kurze Sätze mit höchstens 12 Wörtern.
 - Achtung: Identifikationszahlen übernimmst du 1:1. Beispiel: Stammnummer 123.456.789, AHV-Nummer 756.1234.5678.90, Konto 01-100101-9.
 - Verwende das Komma, dass das deutsche Dezimalzeichen ist. Überflüssige Nullen nach dem Komma schreibst du nicht. Beispiel: 5,5 Millionen, 3,75 Prozent, 1,5 Kilometer, 2,25 Stunden.
 - Vor Franken-Rappen-Beträgen schreibst du immer «CHF». Nur nach ganzen Franken-Beträgen darfst du «Franken» schreiben. Bei Franken- Rappen-Beträgen setzt du einen Punkt als Dezimalzeichen. Anstatt des Null-Rappen-Strichs verwendest du «.00» oder lässt die Dezimalstellen weg. Z.B. 20 Franken, CHF 20, CHF 2.00, CHF 12.50, aber CHF 45,2 Millionen, EUR 14,90.
-- Die Anrede mit «Sie» schreibst du immer gross. Beispiel: «Sie haben».
-- Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags."""
+- Die Anrede mit «Sie» schreibst du immer gross. Beispiel: «Sie haben»."""
 
 
 RULES_LS = """- Wichtiges zuerst: Beginne den Text mit den wichtigsten Informationen, so dass diese sofort klar werden.
@@ -92,8 +91,7 @@ RULES_LS = """- Wichtiges zuerst: Beginne den Text mit den wichtigsten Informati
 - Strukturiere den Text. Gliedere in sinnvolle Abschnitte und Absätze. Verwende Titel und Untertitel grosszügig, um den Text zu gliedern. Es kann hilfreich sein, wenn diese als Frage formuliert sind.
 - Stelle Aufzählungen als Liste dar.
 - Zeilenumbrüche helfen, Sinneinheiten zu bilden und erleichtern das Lesen. Füge deshalb nach Haupt- und Nebensätzen sowie nach sonstigen Sinneinheiten Zeilenumbrüche ein. Eine Sinneinheit soll maximal 8 Zeilen umfassen.
-- Eine Textzeile enthält inklusiv Leerzeichen maximal 85 Zeichen.
-- Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags."""
+- Eine Textzeile enthält inklusiv Leerzeichen maximal 85 Zeichen."""
 
 
 REWRITE_COMPLETE = """- Achte immer sehr genau darauf, dass ALLE Informationen aus dem schwer verständlichen Text in dem Text in Leichter Sprache enthalten sind. Kürze niemals Informationen. Wo sinnvoll kannst du zusätzliche Beispiele hinzufügen, um den Text verständlicher zu machen und relevante Inhalte zu konkretisieren."""
@@ -126,6 +124,8 @@ Beachte dabei folgende Regeln für Leichte Sprache (A2):
 {rules}
 
 Schreibe den vereinfachten Text innerhalb von <leichtesprache> Tags.
+
+Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags.
 
 Hier ist der schwer verständliche Text:
 
