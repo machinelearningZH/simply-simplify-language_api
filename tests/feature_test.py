@@ -111,5 +111,4 @@ def test_send_nothing(client):
         }
     )
     assert response.status_code == 200
-    # Testing only the simplification as we can't really predict what OpenAI is going to give us as an answer
     assert response.json()["simplification"] == 'leichte_sprache'
