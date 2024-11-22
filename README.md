@@ -118,7 +118,23 @@ Example Response (JSON Format)
 
 ```
 {
-    "simplified_data": "A simplified version of the biography text."
+    "uuid": "1",
+    "type": "section_title",
+    "fields": [
+        {
+            "name": "field_title",
+            "type": "plaintext",
+            "content": "Als Vernehmlassungsverfahren wird diejenige Phase innerhalb des Vorverfahrens der Gesetzgebung bezeichnet, in der Vorhaben des Bundes von erheblicher politischer, finanzieller, wirtschaftlicher, ökologischer, sozialer oder kultureller Tragweite auf ihre sachliche Richtigkeit, Vollzugstauglichkeit und Akzeptanz hin geprüft werden. ",
+            "simplified_text": "Ein Vernehmlassungsverfahren ist ein wichtiger Teil bei neuen Gesetzen. \n\nIn dieser Phase prüft der Bund neue Pläne. \n\nDer Bund prüft, ob die Pläne richtig sind. \n\nDer Bund prüft, ob die Pläne praktisch sind. \n\nDer Bund prüft, ob die Pläne akzeptiert werden. \n\nDiese Prüfung ist wichtig für:\n\n- Politik\n- Finanzen\n- Wirtschaft\n- Umwelt\n- Soziales\n- Kultur"
+        },
+        {
+            "name": "field_lead",
+            "type": "markup",
+            "content": "<p>Die Vorlage wird zu diesem <strong>Zweck</strong> den Kantonen, den in der Bundesversammlung vertretenen Parteien, den Dachverbänden der Gemeinden, Städte und der Berggebiete, den Dachverbänden der Wirtschaft sowie weiteren, im Einzelfall interessierten Kreisen unterbreitet.</p>",
+            "simplified_text": "<p>\nDie Vorlage geht an viele Gruppen. \nDie Vorlage geht an die Kantone. \nDie Vorlage geht an die Parteien im Parlament. \nDie Vorlage geht an die Verbände von Gemeinden und Städten. \nDie Vorlage geht an die Verbände von Berggebieten. \nDie Vorlage geht an die Wirtschafts-Verbände. \nDie Vorlage geht auch an andere interessierte Gruppen. \n</p>"
+        }
+    ],
+    "simplification": "leichte_sprache"
 }
 ```
 
