@@ -37,14 +37,13 @@ Please note, we use [Ruff](https://docs.astral.sh/ruff/) for linting and code fo
 ***Description***
 
 This endpoint simplifies a given input based on the provided payload. It supports both JSON and text formats for the input data. Depending on the specified format, the data is processed differently.
-Request Body
 
 ### Request Body
 
 | Field             | Type               | Required       | Description                                                                                  |
 |-------------------|--------------------|----------------|----------------------------------------------------------------------------------------------|
 | `data`            | `string` or `dict` | Yes            | The input data to be simplified. Can be plain text or a JSON object.                         |
-| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into "Leichte Sprache" else into "Einfache Sprache".                                          |
+| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into plain language.                                          |
 | `format`          | `string`           | Yes            | Specifies the format of the input. Accepted values are `"json"` or `"text"`.                 |
 | `path`            | `string`           | Yes (for JSON) | The JSON path to target specific parts of the input data (only used if `format` is `"json"`). |
 | `root`            | `string`           | Yes (for JSON) | The root key for the JSON object (only used if `format` is `"json"`).                        |
@@ -81,7 +80,7 @@ Request Body
 
 Target specific values of the JSON with  the library  [jsonpath_ng](https://pypi.org/project/jsonpath-ng/)
 
-In this example
+***In this example***
 
 > fields[*].content
 
@@ -102,7 +101,7 @@ In this example
     ]
 }
 ```
-Another example
+***Another example***
 
 > $[*].text
 
@@ -114,7 +113,9 @@ Another example
 ```
 
 
-Example Response (JSON Format)
+***Example Response (JSON Format)***
+
+For fields[*].content
 
 ```
 {
@@ -137,10 +138,17 @@ Example Response (JSON Format)
     "simplification": "leichte_sprache"
 }
 ```
+For  $[*].text
+
+```
+{
+    "simplified_data": "A simplified version of the biography text."
+}
+```
 
 ### TEXT
 
-Example Request (Text Format)
+***Example Request (Text Format)***
 
 ```POST /```
 
@@ -151,8 +159,7 @@ Example Request (Text Format)
     "format": "text"
 }
 ```
-
-Example Response (Text Format)
+***Example Response (Text Format)***
 
 ```
 {
@@ -160,13 +167,13 @@ Example Response (Text Format)
 }
 ```
 
-Responses
+***Responses***
 
     200 OK: Successfully simplified the input data. Response contains the simplified text or JSON object.
     400 Bad Request: If the required fields are missing or the payload is not correctly formatted.
     500 Internal Server Error: If an internal error occurs during processing (e.g., incorrect JSON format).
 
-Error Handling
+***Error Handling***
 
 If the provided format is "json" but data is not a dictionary, the endpoint will raise a BadFormattingError.
 Usage Notes
