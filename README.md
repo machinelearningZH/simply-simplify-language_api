@@ -44,7 +44,7 @@ Request Body
 | Field             | Type               | Required       | Description                                                                                  |
 |-------------------|--------------------|----------------|----------------------------------------------------------------------------------------------|
 | `data`            | `string` or `dict` | Yes            | The input data to be simplified. Can be plain text or a JSON object.                         |
-| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into plain language.                                          |
+| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into "Leichte Sprache" else into "Einfache Sprache".                                          |
 | `format`          | `string`           | Yes            | Specifies the format of the input. Accepted values are `"json"` or `"text"`.                 |
 | `path`            | `string`           | Yes (for JSON) | The JSON path to target specific parts of the input data (only used if `format` is `"json"`). |
 | `root`            | `string`           | Yes (for JSON) | The root key for the JSON object (only used if `format` is `"json"`).                        |
