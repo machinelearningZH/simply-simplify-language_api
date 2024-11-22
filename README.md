@@ -138,13 +138,8 @@ For fields[*].content
     "simplification": "leichte_sprache"
 }
 ```
-For  $[*].text
 
-```
-{
-    "simplified_data": "A simplified version of the biography text."
-}
-```
+```simplified_text``` will be append to the ```root``` path of the json specified. If no root specified it will be append to the JSON.
 
 ### TEXT
 
