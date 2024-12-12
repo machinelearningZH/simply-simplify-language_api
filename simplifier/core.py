@@ -1,8 +1,6 @@
-import re
-from logger import logger
-
 from dotenv import load_dotenv
 from openai import OpenAI
+from model.StructuredData import SimplificationResponse
 
 from config import (
     OPENAI_API_KEY,
@@ -26,6 +24,8 @@ OPENAI_TEMPLATES = [
 
 # ---------------------------------------------------------------
 # Constants
+
+api_endpoint = "https://api.openai.com/v1/completions"
 
 load_dotenv()
 
@@ -67,25 +67,11 @@ class Simplifier:
             system = SYSTEM_MESSAGE_ES
         return final_prompt, system
 
-    def get_result_from_response(self, response, leichte_sprache=False):
-        """Extract text between tags from response."""
-        if leichte_sprache:
-            result = re.findall(
-                r"<leichtesprache>(.*?)</leichtesprache>", response, re.DOTALL
-            )
-        else:
-            result = re.findall(
-                r"<einfachesprache>(.*?)</einfachesprache>", response, re.DOTALL
-            )
-        result = "\n".join(result)
-        return result.strip()
-
     def invoke_openai_model(self, text, leichte_sprache):
         """Invoke OpenAI model."""
         final_prompt, system = self.create_prompt(text, *OPENAI_TEMPLATES, leichte_sprache)
-        logger.info(f"Model {self.model}")
         try:
-            message = openai_client.chat.completions.create(
+            message = openai_client.beta.chat.completions.parse(
                 model=self.model,
                 temperature=TEMPERATURE,
                 max_tokens=MAX_TOKENS,
@@ -93,9 +79,9 @@ class Simplifier:
                     {"role": "system", "content": system},
                     {"role": "user", "content": final_prompt},
                 ],
+                response_format=SimplificationResponse
             )
-            message = message.choices[0].message.content.strip()
-            return True, self.get_result_from_response(message, leichte_sprache)
+            return True, message.choices[0].message.parsed
         except Exception as e:
             print(f"Error: {e}")
             return False, e
@@ -108,4 +94,4 @@ class Simplifier:
         if success:
             return response
         else:
-            return "Error: " + response
+            return response

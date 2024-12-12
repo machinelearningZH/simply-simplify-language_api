@@ -1,9 +1,8 @@
 import pytest
 
-from logger import logger
 from fastapi.testclient import TestClient
-from fastapi_app import app, get_simplifier  # Assuming your FastAPI app is in a file named main.py
-
+from fastapi_app import app, get_simplifier
+from logger import logger
 
 # Mock dependency function
 def mock_get_simplifier():
@@ -18,57 +17,24 @@ def mock_get_simplifier():
 
 
 json_example = {
-    "data": {
-        "uuid": "1",
-        "type": "section_title",
-        "fields": [
-            {
-                "name": "field_title",
-                "type": "plaintext",
-                "content": "Hallo Welt"
-            },
-            {
-                "name": "field_lead",
-                "type": "markup",
-                "content": "<p>Lorem ipsum dolor</p>"
-            }
-        ],
-    },
+    "data":  [
+        {
+            "text": "Hallo Welt"
+        },
+        {
+            "text": "<p>Lorem ipsum dolor</p>"
+        }
+    ],
     "leichte_sprache": "False",
-    "format": "json",
-    "path": "fields[*].content",
-    "root": "fields"
 }
 
 json_expected = {
-    "uuid": "1",
-    "type": "section_title",
-    "fields": [
+    "data": [
         {
-            "name": "field_title",
-            "type": "plaintext",
-            "content": "Hallo Welt",
-            "simplified_text": "Hallo Welt"
-        },
-        {
-            "name": "field_lead",
-            "type": "markup",
-            "content": "<p>Lorem ipsum dolor</p>",
-            "simplified_text": "<p>Lorem ipsum dolor</p>"
+            "text": "Hallo Welt"
         }
     ],
-    'simplification': 'einfache_sprache',
-}
-
-text_example = {
-    "data": "Einfache Sprache",
-    "leichte_sprache": "True",
-    "format": "text"
-}
-
-text_expected = {
-    "data": "Einfache Sprache",
-    'simplification': 'einfache_sprache',
+    "leichte_sprache": "False",
 }
 
 
@@ -87,18 +53,16 @@ def test_send_json(client):
         json=json_example
     )
     assert response.status_code == 200
-    assert response.json()["fields"][0]["simplified_text"] == 'The text simplified in einfache sprache'
-    assert response.json()["simplification"] == 'einfache_sprache'
+    assert response.json() == 'The text simplified in einfache sprache'
 
 
 def test_send_text(client):
     response = client.post(
         "/",
-        json=text_example
+        json=json_expected
     )
     assert response.status_code == 200
-    assert response.json()["data"] == 'The text simplified in leichte sprache'
-    assert response.json()["simplification"] == 'leichte_sprache'
+    assert response.json() == 'The text simplified in einfache sprache'
 
 
 def test_send_nothing(client):
@@ -107,8 +71,6 @@ def test_send_nothing(client):
         json={
             "data": "",
             "leichte_sprache": "True",
-            "format": "text"
         }
     )
-    assert response.status_code == 200
-    assert response.json()["simplification"] == 'leichte_sprache'
+    assert response.status_code == 422

@@ -6,10 +6,10 @@
 # https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/politik-staat/teilhabe/erfolgsbeispiele-teilhabe/Sprachleitfaden_Strassenverkehrsamt_Maerz_2022.pdf
 
 
-SYSTEM_MESSAGE_ES = """Du bist ein hilfreicher Assistent, der Texte in Einfache Sprache, Sprachniveau B1 bis A2, umschreibt. Sei immer wahrheitsgemäß und objektiv. Schreibe nur das, was du sicher aus dem Text des Benutzers weisst. Arbeite die Texte immer vollständig durch und kürze nicht. Mache keine Annahmen. Schreibe einfach und klar und immer in deutscher Sprache. Gib dein Ergebnis innerhalb von <einfachesprache> Tags aus."""
+SYSTEM_MESSAGE_ES = """Du bist ein hilfreicher Assistent, der Texte in Einfache Sprache, Sprachniveau B1 bis A2, umschreibt. Sei immer wahrheitsgemäß und objektiv. Schreibe nur das, was du sicher aus dem Text des Benutzers weisst. Arbeite die Texte immer vollständig durch und kürze nicht. Mache keine Annahmen. Schreibe einfach und klar und immer in deutscher Sprache."""
 
 
-SYSTEM_MESSAGE_LS = """Du bist ein hilfreicher Assistent, der Texte in Leichte Sprache, Sprachniveau A2, umschreibt. Sei immer wahrheitsgemäß und objektiv. Schreibe nur das, was du sicher aus dem Text des Benutzers weisst. Arbeite die Texte immer vollständig durch und kürze nicht. Mache keine Annahmen. Schreibe einfach und klar und immer in deutscher Sprache. Gib dein Ergebnis innerhalb von <leichtesprache> Tags aus."""
+SYSTEM_MESSAGE_LS = """Du bist ein hilfreicher Assistent, der Texte in Leichte Sprache, Sprachniveau A2, umschreibt. Sei immer wahrheitsgemäß und objektiv. Schreibe nur das, was du sicher aus dem Text des Benutzers weisst. Arbeite die Texte immer vollständig durch und kürze nicht. Mache keine Annahmen. Schreibe einfach und klar und immer in deutscher Sprache."""
 
 
 RULES_ES = """- Schreibe kurze Sätze mit höchstens 12 Wörtern.
@@ -107,7 +107,7 @@ Beachte dabei folgende Regeln für Einfache Sprache (B1 bis A2):
 {completeness}
 {rules}
 
-Schreibe den vereinfachten Text innerhalb von <einfachesprache> Tags.
+Provide the simplification for each text item in the provided array.
 
 Hier ist der schwer verständliche Text:
 
@@ -123,9 +123,9 @@ Beachte dabei folgende Regeln für Leichte Sprache (A2):
 {completeness}
 {rules}
 
-Schreibe den vereinfachten Text innerhalb von <leichtesprache> Tags.
+Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`, `<a>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags.
 
-Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags.
+Provide the simplification for each text item in the provided array.
 
 Hier ist der schwer verständliche Text:
 
