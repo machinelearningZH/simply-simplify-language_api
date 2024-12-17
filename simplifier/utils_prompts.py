@@ -111,6 +111,8 @@ Beachte dabei folgende Regeln für Einfache Sprache (B1 bis A2):
 
 Provide the simplification for each text item in the provided array.
 
+Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`, `<a>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags.
+
 Hier ist der schwer verständliche Text:
 
 --------------------------------------------------------------------------------
