@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-from model.StructuredData import TextPayload
+from model.StructuredData import Payload
 from simplifier.core import Simplifier
 
 from converter.BadFormattingError import BadFormattingError
@@ -26,10 +26,10 @@ def get_simplifier():
 
 
 @app.post("/")
-async def simplify(payload: TextPayload, simplifier: Simplifier = Depends(get_simplifier)):
+async def simplify(payload: Payload, simplifier: Simplifier = Depends(get_simplifier)):
     model = payload.model if payload.model else None
     if isinstance(payload.data, list):
-        logger.info(f"Convert json")
+        logger.info(f"Simplifying with model {model}")
         converter = DataConverter(payload, simplifier, model)
         return converter.simplify()
     else:

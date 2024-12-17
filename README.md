@@ -12,7 +12,7 @@ With this version you can pip install the core functionality and use language si
 - Activate the environment: `conda activate simplifier`
 - Clone this repository. Change into the project directory.
 - Install the requirements: `pip install -r requirements.txt`
-- Export the OpenAI API key as an environment variable: `export OPENAI_API_KEY=your-api-key`
+- Set the OpenAI API key, the MODEL_NAME and the Maximum tokens as an environment variables in env.
 
 **Start the FastAPI server**
 
@@ -36,18 +36,15 @@ Please note, we use [Ruff](https://docs.astral.sh/ruff/) for linting and code fo
 
 ***Description***
 
-This endpoint simplifies a given input based on the provided payload. It supports both JSON and text formats for the input data. Depending on the specified format, the data is processed differently.
+This endpoint simplifies a given input based on the provided payload. It supports a JSON object for the input data.
 
 ### Request Body
 
-| Field             | Type               | Required       | Description                                                                                  |
-|-------------------|--------------------|----------------|----------------------------------------------------------------------------------------------|
-| `data`            | `string` or `dict` | Yes            | The input data to be simplified. Can be plain text or a JSON object.                         |
-| `leichte_sprache` | `boolean`          | Yes            | If `True`, simplifies the text into plain language.                                          |
-| `format`          | `string`           | Yes            | Specifies the format of the input. Accepted values are `"json"` or `"text"`.                 |
-| `path`            | `string`           | Yes (for JSON) | The JSON path to target specific parts of the input data (only used if `format` is `"json"`). |
-| `root`            | `string`           | Yes (for JSON) | The root key for the JSON object (only used if `format` is `"json"`).                        |
-| `model`           | `gpt-4o`           | No             | Used for testing the OpenAI model, default is `gpt-4o`                                        |
+| Field             | Type      | Required       | Description                                           |
+|-------------------|-----------|----------------|-------------------------------------------------------|
+| `data`            | `dict`    | Yes            | Json with a list of strings to simplifiy          |
+| `leichte_sprache` | `boolean` | No             | If `True`, simplifies the text into plain language.   |
+| `model`           | `gpt-4o`  | No             | Used for testing the OpenAI model, default is `gpt-4o` |
 
 
 ```POST / ```
@@ -56,115 +53,35 @@ This endpoint simplifies a given input based on the provided payload. It support
 
 ```
 {
-    "data": {
-        "id": "1",
-        "fields": [
-            {
-                "name": "field_title",
-                "type": "plaintext",
-                "content": "Als Vernehmlassungsverfahren wird diejenige Phase innerhalb des Vorverfahrens der Gesetzgebung bezeichnet, in der Vorhaben des Bundes von erheblicher politischer, finanzieller, wirtschaftlicher, ökologischer, sozialer oder kultureller Tragweite auf ihre sachliche Richtigkeit, Vollzugstauglichkeit und Akzeptanz hin geprüft werden. "
-            },
-            {
-                "name": "field_lead",
-                "type": "markup",
-                "content": "<p>Die Vorlage wird zu diesem <strong>Zweck</strong> den Kantonen, den in der Bundesversammlung vertretenen Parteien, den Dachverbänden der Gemeinden, Städte und der Berggebiete, den Dachverbänden der Wirtschaft sowie weiteren, im Einzelfall interessierten Kreisen unterbreitet.</p>"
-            }
-        ]
-    },
-    "leichte_sprache": "True",
-    "format": "json",
-    "path": "fields[*].content",
-    "root": "fields"
-}
-```
-
-Target specific values of the JSON with  the library  [jsonpath_ng](https://pypi.org/project/jsonpath-ng/)
-
-***In this example***
-
-> fields[*].content
-
-```
-{
-    "id": "1",
-    "fields": [
+  "data": [
         {
-            "name": "field_title",
-            "type": "plaintext",
-            "content": "Als Vernehmlassungsverfahren wird diejenige Phase innerhalb des Vorverfahrens der Gesetzgebung bezeichnet, in der Vorhaben des Bundes von erheblicher politischer, finanzieller, wirtschaftlicher, ökologischer, sozialer oder kultureller Tragweite auf ihre sachliche Richtigkeit, Vollzugstauglichkeit und Akzeptanz hin geprüft werden. "
+            "text": "Als Vernehmlassungsverfahren wird diejenige Phase innerhalb des Vorverfahrens der Gesetzgebung bezeichnet, in der Vorhaben des Bundes von erheblicher politischer, finanzieller, wirtschaftlicher, ökologischer, sozialer oder kultureller Tragweite auf ihre sachliche Richtigkeit, Vollzugstauglichkeit und Akzeptanz hin geprüft werden. "
         },
         {
-            "name": "field_lead",
-            "type": "markup",
-            "content": "<p>Die Vorlage wird zu diesem <strong>Zweck</strong> den Kantonen, den in der Bundesversammlung vertretenen Parteien, den Dachverbänden der Gemeinden, Städte und der Berggebiete, den Dachverbänden der Wirtschaft sowie weiteren, im Einzelfall interessierten Kreisen unterbreitet.</p>"
+            "text": "<p>Die Vorlage wird zu diesem <strong>Zweck</strong> den Kantonen, den in der Bundesversammlung vertretenen Parteien, den Dachverbänden der Gemeinden, Städte und der Berggebiete, den Dachverbänden der Wirtschaft sowie weiteren, im Einzelfall interessierten Kreisen unterbreitet.</p>"
         }
     ]
 }
 ```
-***Another example***
 
-> $[*].text
-
-```
-[
-    {"text": "Hello World 2"},
-    {"text": "<p>Lorem ipsum dolor amet</p>"}
-]
-```
-
-
-***Example Response (JSON Format)***
-
-For fields[*].content
+### Response
 
 ```
 {
-    "uuid": "1",
-    "type": "section_title",
-    "fields": [
+    "simplifications": [
         {
-            "name": "field_title",
-            "type": "plaintext",
-            "content": "Als Vernehmlassungsverfahren wird diejenige Phase innerhalb des Vorverfahrens der Gesetzgebung bezeichnet, in der Vorhaben des Bundes von erheblicher politischer, finanzieller, wirtschaftlicher, ökologischer, sozialer oder kultureller Tragweite auf ihre sachliche Richtigkeit, Vollzugstauglichkeit und Akzeptanz hin geprüft werden. ",
-            "simplified_text": "Ein Vernehmlassungsverfahren ist ein wichtiger Teil bei neuen Gesetzen. \n\nIn dieser Phase prüft der Bund neue Pläne. \n\nDer Bund prüft, ob die Pläne richtig sind. \n\nDer Bund prüft, ob die Pläne praktisch sind. \n\nDer Bund prüft, ob die Pläne akzeptiert werden. \n\nDiese Prüfung ist wichtig für:\n\n- Politik\n- Finanzen\n- Wirtschaft\n- Umwelt\n- Soziales\n- Kultur"
+            "text": "Das Vernehmlassungsverfahren ist ein Teil der Gesetzgebung. In diesem Teil prüft der Bund wichtige Vorhaben. Der Bund prüft, ob die Vorhaben richtig, durchführbar und akzeptiert sind."
         },
         {
-            "name": "field_lead",
-            "type": "markup",
-            "content": "<p>Die Vorlage wird zu diesem <strong>Zweck</strong> den Kantonen, den in der Bundesversammlung vertretenen Parteien, den Dachverbänden der Gemeinden, Städte und der Berggebiete, den Dachverbänden der Wirtschaft sowie weiteren, im Einzelfall interessierten Kreisen unterbreitet.</p>",
-            "simplified_text": "<p>\nDie Vorlage geht an viele Gruppen. \nDie Vorlage geht an die Kantone. \nDie Vorlage geht an die Parteien im Parlament. \nDie Vorlage geht an die Verbände von Gemeinden und Städten. \nDie Vorlage geht an die Verbände von Berggebieten. \nDie Vorlage geht an die Wirtschafts-Verbände. \nDie Vorlage geht auch an andere interessierte Gruppen. \n</p>"
+            "text": "Der Bund legt den Vorschlag den Kantonen vor. Auch Parteien im Parlament sehen den Vorschlag. Verbände der Gemeinden, Städte und Berggebiete bekommen den Vorschlag. Wirtschaftsverbände und andere interessierte Gruppen sehen den Vorschlag auch."
         }
-    ],
-    "simplification": "leichte_sprache"
-}
-```
-
-```simplified_text``` will be append to the ```root``` path of the json specified. If no root specified it will be append to the JSON.
-
-### TEXT
-
-***Example Request (Text Format)***
-
-```POST /```
-
-```
-{
-    "data": "Lorem ipsum dolor sit amet.",
-    "leichte_sprache": true,
-    "format": "text"
-}
-```
-***Example Response (Text Format)***
-
-```
-{
-    "simplified_data": "Simplified plain text version."
+    ]
 }
 ```
 
 ***Responses***
 
-    200 OK: Successfully simplified the input data. Response contains the simplified text or JSON object.
+    200 OK: Successfully simplified the input data. 
     400 Bad Request: If the required fields are missing or the payload is not correctly formatted.
     500 Internal Server Error: If an internal error occurs during processing (e.g., incorrect JSON format).
 
@@ -172,6 +89,4 @@ For fields[*].content
 
 If the provided format is "json" but data is not a dictionary, the endpoint will raise a BadFormattingError.
 Usage Notes
-
-    Use "format": "json" if you're providing structured data in JSON format; otherwise, use "format": "text" for plain text.
     The leichte_sprache flag simplifies the content to plain language for easier understanding.

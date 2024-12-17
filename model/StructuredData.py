@@ -10,7 +10,7 @@ class SimplificationResponse(BaseModel):
     simplifications: list[SimplificationText]
 
 
-class TextPayload(BaseModel):
-    data: List[SimplificationText] = None
-    leichte_sprache: bool
+class Payload(BaseModel):
+    data: List[SimplificationText]
+    leichte_sprache: Optional[bool] = False
     model: Optional[str] = None
