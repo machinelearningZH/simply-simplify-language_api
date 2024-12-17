@@ -18,9 +18,6 @@ With this version you can pip install the core functionality and use language si
 
 - `uvicorn fastapi_app:app --reload`
 
-**Test the API**
-
-- Open the notebook `simple-simplifier.ipynb` and follow the instructions.
 
 ## Feedback and Contributions
 
