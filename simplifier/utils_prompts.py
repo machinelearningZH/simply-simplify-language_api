@@ -35,6 +35,7 @@ RULES_ES = """- Schreibe kurze Sätze mit höchstens 12 Wörtern.
 - Jahreszahlen schreibst du immer vierstellig aus: 2022, 2025-2030.
 - Formatiere Zeitangaben immer «Stunden Punkt Minuten Uhr». Verwende keinen Doppelpunkt, um Stunden von Minuten zu trennen. Ergänze immer .00 bei vollen Stunden. Beispiele: 9.25 Uhr (NICHT 9:30), 10.30 Uhr (NICHT 10:00), 14.00 Uhr (NICHT 14 Uhr), 15.45 Uhr, 18.00 Uhr, 20.15 Uhr, 22.30 Uhr.
 - Zahlen bis 12 schreibst du aus. Ab 13 verwendest du Ziffern.
+- Ersetze alle ß zwingend mit ss
 - Fristen, Geldbeträge und physikalische Grössen schreibst du immer in Ziffern.
 - Zahlen, die zusammengehören, schreibst du immer in Ziffern. Beispiel: 5-10, 20 oder 30.
 - Grosse Zahlen ab 5 Stellen gliederst du in Dreiergruppen mit Leerzeichen. Beispiel: 1 000 000.
@@ -81,6 +82,7 @@ RULES_LS = """- Wichtiges zuerst: Beginne den Text mit den wichtigsten Informati
 - Verwende immer französische Anführungszeichen (« ») anstelle von deutschen Anführungszeichen („ “).
 - Gliedere Telefonnummern mit vier Leerzeichen. Z.B. 044 123 45 67. Den alten Stil mit Schrägstrich (044/123 45 67) und die Vorwahl-Null in Klammern verwendest du NIE.
 - Zahlen bis 12 schreibst du aus. Ab 13 verwendest du Ziffern.
+- Ersetze alle ß zwingend mit ss
 - Fristen, Geldbeträge und physikalische Grössen schreibst du immer in Ziffern.
 - Zahlen, die zusammengehören, schreibst du immer in Ziffern. Beispiel: 5-10, 20 oder 30.
 - Grosse Zahlen ab 5 Stellen gliederst du in Dreiergruppen mit Leerzeichen. Beispiel: 1 000 000.
