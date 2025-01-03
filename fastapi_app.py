@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 
-# Dependency injection
+# Dependency injection.
 def get_simplifier():
     return Simplifier()
 

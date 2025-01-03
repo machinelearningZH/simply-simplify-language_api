@@ -18,7 +18,6 @@ With this version you can pip install the core functionality and use language si
 
 - `uvicorn fastapi_app:app --reload`
 
-
 ## Feedback and Contributions
 
 Please share your feedback. You can [write an email](mailto:datashop@statistik.zh.ch) or share your ideas by opening an issue or a pull requests.
@@ -29,7 +28,7 @@ Please note, we use [Ruff](https://docs.astral.sh/ruff/) for linting and code fo
 
 ### Route
 
-```POST / ```
+```POST /```
 
 ***Description***
 
@@ -43,8 +42,7 @@ This endpoint simplifies a given input based on the provided payload. It support
 | `leichte_sprache` | `boolean` | No             | If `True`, simplifies the text into plain language.   |
 | `model`           | `gpt-4o`  | No             | Used for testing the OpenAI model, default is `gpt-4o` |
 
-
-```POST / ```
+```POST /```
 
 ### JSON
 

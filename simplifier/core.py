@@ -44,7 +44,6 @@ MAX_CHARS_INPUT = 100_000
 
 
 class Simplifier:
-
     def __init__(self):
         self.model = MODEL_NAME
 
@@ -69,7 +68,9 @@ class Simplifier:
 
     def invoke_openai_model(self, text, leichte_sprache):
         """Invoke OpenAI model."""
-        final_prompt, system = self.create_prompt(text, *OPENAI_TEMPLATES, leichte_sprache)
+        final_prompt, system = self.create_prompt(
+            text, *OPENAI_TEMPLATES, leichte_sprache
+        )
         try:
             message = openai_client.beta.chat.completions.parse(
                 model=self.model,
@@ -79,7 +80,7 @@ class Simplifier:
                     {"role": "system", "content": system},
                     {"role": "user", "content": final_prompt},
                 ],
-                response_format=SimplificationResponse
+                response_format=SimplificationResponse,
             )
             return True, message.choices[0].message.parsed
         except Exception as e:

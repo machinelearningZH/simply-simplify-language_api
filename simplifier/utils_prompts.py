@@ -109,9 +109,9 @@ Beachte dabei folgende Regeln für Einfache Sprache (B1 bis A2):
 {completeness}
 {rules}
 
-Provide the simplification for each text item in the provided array.
+Erstelle die Vereinfachung für jedes Element in der Liste, die du erhalten hast.
 
-Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`, `<a>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags.
+Wenn du HTML tags (z.B. `<em>`, `<strong>`, `<p>`, `<a>`) im Text erhältst, behalte sie genau so bei, wie sie im Text erscheinen. Füge keine, entferne keine und ändere keine HTML tags.
 
 Hier ist der schwer verständliche Text:
 
@@ -127,9 +127,9 @@ Beachte dabei folgende Regeln für Leichte Sprache (A2):
 {completeness}
 {rules}
 
-Preserve all original HTML tags (e.g., `<em>`, `<strong>`, `<p>`, `<a>`) exactly as they appear in the text. Do not add, remove, or alter any HTML tags.
+Erstelle die Vereinfachung für jedes Element in der Liste, die du erhalten hast.
 
-Provide the simplification for each text item in the provided array.
+Wenn du HTML tags (z.B. `<em>`, `<strong>`, `<p>`, `<a>`) im Text erhältst, behalte sie genau so bei, wie sie im Text erscheinen. Füge keine, entferne keine und ändere keine HTML tags.
 
 Hier ist der schwer verständliche Text:
 
