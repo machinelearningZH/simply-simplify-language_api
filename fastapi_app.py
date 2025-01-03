@@ -1,16 +1,36 @@
-from fastapi import FastAPI
-from simplifier.core import simplify_text
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
+
+from model.StructuredData import Payload
+from simplifier.core import Simplifier
+
+from converter.BadFormattingError import BadFormattingError
+from converter.DataConverter import DataConverter
+
+from logger import logger
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class TextPayload(BaseModel):
-    text: str
-    leichte_sprache: bool = False
+
+# Dependency injection
+def get_simplifier():
+    return Simplifier()
 
 
 @app.post("/")
-async def simplify(payload: TextPayload):
-    simplified_text = simplify_text(payload.text, payload.leichte_sprache)
-    return {"simplified_text": simplified_text}
+async def simplify(payload: Payload, simplifier: Simplifier = Depends(get_simplifier)):
+    model = payload.model if payload.model else None
+    if isinstance(payload.data, list):
+        logger.info(f"Simplifying with model {model}")
+        converter = DataConverter(payload, simplifier, model)
+        return converter.simplify()
+    else:
+        raise BadFormattingError(500)
