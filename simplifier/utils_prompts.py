@@ -111,7 +111,7 @@ Beachte dabei folgende Regeln für Einfache Sprache (B1 bis A2):
 
 Erstelle die Vereinfachung für jedes Element in der Liste, die du erhalten hast.
 
-Wenn du HTML tags (z.B. `<em>`, `<strong>`, `<p>`, `<a>`) im Text erhältst, behalte sie genau so bei, wie sie im Text erscheinen. Füge keine, entferne keine und ändere keine HTML tags.
+Wenn du HTML Tags (z.B. `<em>`, `<strong>`, `<p>`, `<a>`) im Text erhältst, behalte sie genau so bei, wie sie im Text erscheinen. Füge keine HTML Tags hinzu, entferne keine Tags und ändere keine Tags.
 
 Hier ist der schwer verständliche Text:
 
@@ -129,7 +129,7 @@ Beachte dabei folgende Regeln für Leichte Sprache (A2):
 
 Erstelle die Vereinfachung für jedes Element in der Liste, die du erhalten hast.
 
-Wenn du HTML tags (z.B. `<em>`, `<strong>`, `<p>`, `<a>`) im Text erhältst, behalte sie genau so bei, wie sie im Text erscheinen. Füge keine, entferne keine und ändere keine HTML tags.
+Wenn du HTML Tags (z.B. `<em>`, `<strong>`, `<p>`, `<a>`) im Text erhältst, behalte sie genau so bei, wie sie im Text erscheinen. Füge keine HTML Tags hinzu, entferne keine Tags und ändere keine Tags.
 
 Hier ist der schwer verständliche Text:
 
