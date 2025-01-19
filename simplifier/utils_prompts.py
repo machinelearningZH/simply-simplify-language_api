@@ -96,7 +96,7 @@ RULES_LS = """- Wichtiges zuerst: Beginne den Text mit den wichtigsten Informati
 - Eine Textzeile enthält inklusiv Leerzeichen maximal 85 Zeichen."""
 
 
-REWRITE_COMPLETE = """- Achte immer sehr genau darauf, dass ALLE Informationen aus dem schwer verständlichen Text in dem Text in Leichter Sprache enthalten sind. Kürze niemals Informationen. Wo sinnvoll kannst du zusätzliche Beispiele hinzufügen, um den Text verständlicher zu machen und relevante Inhalte zu konkretisieren."""
+REWRITE_COMPLETE = """- Achte immer sehr genau darauf, dass ALLE Informationen aus dem schwer verständlichen Text in deinem verständlicheren Text enthalten sind. Kürze niemals Informationen. Wo sinnvoll kannst du zusätzliche Beispiele hinzufügen, um den Text verständlicher zu machen und relevante Inhalte zu konkretisieren."""
 
 
 REWRITE_CONDENSED = """- Konzentriere dich auf das Wichtigste. Gib die essenziellen Informationen wieder und lass den Rest weg. Wichtig sind zusätzliche Beispiele. Damit konkretisierst du relevante Inhalte und machst sie dadurch verständlicher."""
