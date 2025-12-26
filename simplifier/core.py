@@ -10,8 +10,8 @@ from config import (
 )
 from model.structured_data import SimplificationResponse
 from simplifier.utils_prompts import (
-    OPENAI_TEMPLATE_ES,
-    OPENAI_TEMPLATE_LS,
+    PROMPT_TEMPLATE_ES,
+    PROMPT_TEMPLATE_LS,
     REWRITE_COMPLETE,
     RULES_ES,
     RULES_LS,
@@ -19,9 +19,9 @@ from simplifier.utils_prompts import (
     SYSTEM_MESSAGE_LS,
 )
 
-OPENAI_TEMPLATES = [
-    OPENAI_TEMPLATE_ES,
-    OPENAI_TEMPLATE_LS,
+PROMPT_TEMPLATES = [
+    PROMPT_TEMPLATE_ES,
+    PROMPT_TEMPLATE_LS,
 ]
 
 # ---------------------------------------------------------------
@@ -43,10 +43,6 @@ openai_client = OpenAI(
 )
 
 MAX_TOKENS = int(MAX_TOKENS)
-
-# From our testing we derive a sensible temperature of 0.5 as a good trade-off between creativity and coherence.
-# Adjust this to your needs.
-TEMPERATURE = 0.5
 
 # Maximum number of characters for the input text.
 # This is way below the context window size of the GPT-4o model. Adjust to your needs.
@@ -78,11 +74,10 @@ class Simplifier:
 
     def invoke_model(self, text, leichte_sprache):
         """Invoke LLM via OpenRouter."""
-        final_prompt, system = self.create_prompt(text, *OPENAI_TEMPLATES, leichte_sprache)
+        final_prompt, system = self.create_prompt(text, *PROMPT_TEMPLATES, leichte_sprache)
         try:
             message = openai_client.beta.chat.completions.parse(
                 model=self.model,
-                temperature=TEMPERATURE,
                 max_tokens=MAX_TOKENS,
                 messages=[
                     {"role": "system", "content": system},
@@ -100,7 +95,7 @@ class Simplifier:
     def simplify_text(self, text, leichte_sprache=False):
         """Simplify text."""
         if len(text) > MAX_CHARS_INPUT:
-            return f"Error: Dein Text ist zu lang für das System. Bitte kürze ihn auf {MAX_CHARS_INPUT} Zeichen oder weniger."
+            return f"Error: Dein Text enthält {len(text)} Zeichen und ist zu lang für das System. Bitte kürze ihn auf {MAX_CHARS_INPUT} Zeichen oder weniger."
         success, response = self.invoke_model(text, leichte_sprache)
         if success:
             return response
