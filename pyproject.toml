@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "Simple Simplify Language API version"
+name = "simply-simplify-language_api"
 version = "0.2.0"
 description = 'Simple Simplify German Language - API version'
 readme = "README.md"
@@ -30,6 +30,9 @@ dependencies = [
 
 [tool.hatch]
 version = "0.2.0"
+
+[tool.hatch.build.targets.wheel]
+packages = ["converter", "model", "simplifier"]
 
 [dependency-groups]
 dev = [
