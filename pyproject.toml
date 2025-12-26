@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "simplifier"
-version = "0.1.0"
-description = 'Simple Simplify German Language'
+name = "Simple Simplify Language API version"
+version = "0.2.0"
+description = 'Simple Simplify German Language - API version'
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 
 
 authors = [
-  { name = "machinelearningZH", email = "datashop@statistik.zh.ch" },
+  { name = "Statistisches Amt Kanton Zürich, Team Data", email = "datashop@statistik.zh.ch" },
 ]
 
 dependencies = [
@@ -25,15 +25,11 @@ dependencies = [
     "jsonpath-ng>=1.7.0",
     "pydantic>=2.10.5",
     "itsdangerous>=2.2.0",
+    "requests>=2.32.5",
 ]
 
-[project.urls]
-Documentation = "https://github.com/machinelearningZH/simple-simplifier#readme"
-Issues = "https://github.com/machinelearningZH/simple-simplifier/issues"
-Source = "https://github.com/machinelearningZH/simple-simplifier"
-
 [tool.hatch]
-version = "0.1.0"
+version = "0.2.0"
 
 [dependency-groups]
 dev = [

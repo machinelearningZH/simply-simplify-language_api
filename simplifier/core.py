@@ -77,7 +77,7 @@ class Simplifier:
         return final_prompt, system
 
     def invoke_model(self, text, leichte_sprache):
-        """Invoke LLM via OpenRouter.""""
+        """Invoke LLM via OpenRouter."""
         final_prompt, system = self.create_prompt(text, *OPENAI_TEMPLATES, leichte_sprache)
         try:
             message = openai_client.beta.chat.completions.parse(
