@@ -23,8 +23,6 @@ Requirements:
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) for package and environment management
 
-### Install uv (if not already installed)
-
 ```bash
 # macOS and Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -39,9 +37,9 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 2. Create a `.env` file with your OpenRouter configuration:
 
 ```bash
-OPENROUTER_API_KEY=your_api_key_here
-MODEL_NAME=openai/gpt-4o
-MAX_TOKENS=4000
+OPENROUTER_API_KEY=sk-or-v1-...
+MODEL_NAME=google/gemini-3-flash-preview
+MAX_TOKENS=8096
 SITE_URL=https://your-site.com  # Optional
 SITE_NAME=Your App Name  # Optional
 ```
@@ -77,29 +75,15 @@ The test script will:
 - Display the request payload and response
 - Show connection errors if the server isn't running
 
-You can modify `test_api.py` to test with your own text samples.
+## API Reference
 
-## Development
-
-### Adding Dependencies
-
-```bash
-# Add a new dependency
-uv add package-name
-
-# Add a dev dependency
-uv add --dev package-name
-```
-
-# API Reference
-
-## Endpoint
+### Endpoint
 
 **`POST /`**
 
 Simplifies German text based on the provided payload.
 
-### Request Body
+#### Request Body
 
 | Field             | Type            | Required | Description                                                                                                                             |
 | ----------------- | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -107,7 +91,7 @@ Simplifies German text based on the provided payload.
 | `leichte_sprache` | `boolean`       | No       | If `true`, simplifies the text into [Leichte Sprache](https://en.wikipedia.org/wiki/Leichte_Sprache) (plain language). Default: `false` |
 | `model`           | `string`        | No       | LLM model to use via OpenRouter. Default: `openai/gpt-4o`. See [OpenRouter models](https://openrouter.ai/models)                        |
 
-### Example Request
+#### Example Request
 
 ```json
 {
