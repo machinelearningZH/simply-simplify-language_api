@@ -26,12 +26,14 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ### Setup Project
 
 1. Clone this repository and change into the project directory
-2. Create a `.env` file with your OpenAI configuration:
+2. Create a `.env` file with your OpenRouter configuration:
 
 ```bash
-OPENAI_API_KEY=your_api_key_here
-MODEL_NAME=gpt-4o
+OPENROUTER_API_KEY=your_api_key_here
+MODEL_NAME=openai/gpt-4o
 MAX_TOKENS=4000
+SITE_URL=https://your-site.com  # Optional
+SITE_NAME=Your App Name  # Optional
 ```
 
 3. Install dependencies using uv:
@@ -96,7 +98,7 @@ This endpoint simplifies a given input based on the provided payload. It support
 |-------------------|-----------|----------------|-------------------------------------------------------|
 | `data`            | `dict`    | Yes            | Json with a list of strings to simplifiy          |
 | `leichte_sprache` | `boolean` | No             | If `True`, simplifies the text into plain language.   |
-| `model`           | `gpt-4o`  | No             | Used for testing the OpenAI model, default is `gpt-4o` |
+| `model`           | `string`  | No             | Model to use via OpenRouter, default is `openai/gpt-4o`. See [OpenRouter models](https://openrouter.ai/models) for options |
 
 ```POST /```
 

@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Access the variables.
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 MODEL_NAME = os.getenv("MODEL_NAME")
 MAX_TOKENS = os.getenv("MAX_TOKENS")
+SITE_URL = os.getenv("SITE_URL", "")  # Optional: Your site URL
+SITE_NAME = os.getenv("SITE_NAME", "")  # Optional: Your site name

@@ -4,7 +4,9 @@ from openai import OpenAI
 from config import (
     MAX_TOKENS,
     MODEL_NAME,
-    OPENAI_API_KEY,
+    OPENROUTER_API_KEY,
+    SITE_NAME,
+    SITE_URL,
 )
 from model.structured_data import SimplificationResponse
 from simplifier.utils_prompts import (
@@ -25,12 +27,20 @@ OPENAI_TEMPLATES = [
 # ---------------------------------------------------------------
 # Constants
 
-api_endpoint = "https://api.openai.com/v1/completions"
-
 load_dotenv()
 
-OPENAI_API_KEY = OPENAI_API_KEY
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+# Initialize OpenRouter client
+default_headers = {}
+if SITE_URL:
+    default_headers["HTTP-Referer"] = SITE_URL
+if SITE_NAME:
+    default_headers["X-Title"] = SITE_NAME
+
+openai_client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    default_headers=default_headers if default_headers else None,
+)
 
 MAX_TOKENS = int(MAX_TOKENS)
 
@@ -66,8 +76,8 @@ class Simplifier:
             system = SYSTEM_MESSAGE_ES
         return final_prompt, system
 
-    def invoke_openai_model(self, text, leichte_sprache):
-        """Invoke OpenAI model."""
+    def invoke_model(self, text, leichte_sprache):
+        """Invoke LLM via OpenRouter.""""
         final_prompt, system = self.create_prompt(text, *OPENAI_TEMPLATES, leichte_sprache)
         try:
             message = openai_client.beta.chat.completions.parse(
@@ -84,14 +94,14 @@ class Simplifier:
         except Exception as e:
             from logger import logger
 
-            logger.error(f"Error invoking OpenAI model: {e}")
+            logger.error(f"Error invoking model via OpenRouter: {e}")
             return False, e
 
     def simplify_text(self, text, leichte_sprache=False):
         """Simplify text."""
         if len(text) > MAX_CHARS_INPUT:
             return f"Error: Dein Text ist zu lang für das System. Bitte kürze ihn auf {MAX_CHARS_INPUT} Zeichen oder weniger."
-        success, response = self.invoke_openai_model(text, leichte_sprache)
+        success, response = self.invoke_model(text, leichte_sprache)
         if success:
             return response
         else:
