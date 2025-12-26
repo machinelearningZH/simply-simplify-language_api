@@ -1,4 +1,4 @@
-from model.StructuredData import SimplificationResponse
+from model.structured_data import SimplificationResponse
 
 
 class DataConverter:
@@ -15,7 +15,7 @@ class DataConverter:
         results = self.simplifier.simplify_text(self.json, self.leichte_sprache)
 
         # Parse the JSON string into a Python dictionary.
-        data = results.dict()
+        data = results.model_dump()
 
         # Iterate over each item in the "simplifications" list.
         for item in data["simplifications"]:
@@ -23,6 +23,6 @@ class DataConverter:
             item["text"] = item["text"].replace("ß", "ss")
 
         # Convert the updated dictionary back to a JSON string.
-        simplifications = SimplificationResponse.parse_obj(data)
+        simplifications = SimplificationResponse.model_validate(data)
 
         return simplifications

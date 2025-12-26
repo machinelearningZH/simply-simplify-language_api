@@ -1,13 +1,11 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from model.StructuredData import Payload
-from simplifier.core import Simplifier
-
-from converter.BadFormattingError import BadFormattingError
-from converter.DataConverter import DataConverter
-
+from converter.bad_formatting_error import BadFormattingError
+from converter.data_converter import DataConverter
 from logger import logger
+from model.structured_data import Payload
+from simplifier.core import Simplifier
 
 app = FastAPI()
 

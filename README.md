@@ -1,28 +1,84 @@
-# Simple Simplifier API
+# Simple Simplify Language API
 
 **Simply Simplify German Language -- API Version**
 
 This is a simplified version of our [Language Simplification Tool](https://github.com/machinelearningZH/simply-simplify-language).
 
-With this version you can pip install the core functionality and use language simplification via GPT-4o as a package. The API is built with [FastAPI](https://fastapi.tiangolo.com/) and can be used to simplify German language text in production environments where you want to integrate programmatically with other services.
+With this version you can pip install the core functionality and use language simplification via an LLM as a package. The API is built with [FastAPI](https://fastapi.tiangolo.com/) and can be used to simplify German language text in production environments where you want to integrate programmatically with other services.
 
-## Usage
+## Requirements
 
-- Create a [Conda](https://docs.anaconda.com/miniconda/) environment: `conda create -n simplifier python=3.9`
-- Activate the environment: `conda activate simplifier`
-- Clone this repository. Change into the project directory.
-- Install the requirements: `pip install -r requirements.txt`
-- Set the OpenAI API key, the MODEL_NAME and the Maximum tokens as an environment variables in env.
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) for package and environment management
 
-**Start the FastAPI server**
+## Installation & Setup
 
-- `uvicorn fastapi_app:app --reload`
+### Install uv (if not already installed)
+
+```bash
+# macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### Setup Project
+
+1. Clone this repository and change into the project directory
+2. Create a `.env` file with your OpenAI configuration:
+
+```bash
+OPENAI_API_KEY=your_api_key_here
+MODEL_NAME=gpt-4o
+MAX_TOKENS=4000
+```
+
+3. Install dependencies using uv:
+
+```bash
+# Create virtual environment and install dependencies
+uv sync
+
+# Activate the virtual environment
+source .venv/bin/activate  # macOS/Linux
+# or
+.venv\Scripts\activate  # Windows
+```
+
+### Start the FastAPI server
+
+```bash
+uv run uvicorn fastapi_app:app --reload
+```
+
+## Development
+
+### Adding Dependencies
+
+```bash
+# Add a new dependency
+uv add package-name
+
+# Add a dev dependency
+uv add --dev package-name
+```
+
+### Code Quality
+
+We use [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting:
+
+```bash
+# Run linter
+uv run ruff check .
+
+# Format code
+uv run ruff format .
+```
 
 ## Feedback and Contributions
 
 Please share your feedback. You can [write an email](mailto:datashop@statistik.zh.ch) or share your ideas by opening an issue or a pull requests.
-
-Please note, we use [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting with default settings.
 
 # How to use the API
 

@@ -1,20 +1,20 @@
 from dotenv import load_dotenv
 from openai import OpenAI
-from model.StructuredData import SimplificationResponse
 
 from config import (
-    OPENAI_API_KEY,
-    MODEL_NAME,
     MAX_TOKENS,
+    MODEL_NAME,
+    OPENAI_API_KEY,
 )
+from model.structured_data import SimplificationResponse
 from simplifier.utils_prompts import (
-    SYSTEM_MESSAGE_ES,
-    SYSTEM_MESSAGE_LS,
-    RULES_ES,
-    RULES_LS,
-    REWRITE_COMPLETE,
     OPENAI_TEMPLATE_ES,
     OPENAI_TEMPLATE_LS,
+    REWRITE_COMPLETE,
+    RULES_ES,
+    RULES_LS,
+    SYSTEM_MESSAGE_ES,
+    SYSTEM_MESSAGE_LS,
 )
 
 OPENAI_TEMPLATES = [
@@ -68,9 +68,7 @@ class Simplifier:
 
     def invoke_openai_model(self, text, leichte_sprache):
         """Invoke OpenAI model."""
-        final_prompt, system = self.create_prompt(
-            text, *OPENAI_TEMPLATES, leichte_sprache
-        )
+        final_prompt, system = self.create_prompt(text, *OPENAI_TEMPLATES, leichte_sprache)
         try:
             message = openai_client.beta.chat.completions.parse(
                 model=self.model,
@@ -84,7 +82,9 @@ class Simplifier:
             )
             return True, message.choices[0].message.parsed
         except Exception as e:
-            print(f"Error: {e}")
+            from logger import logger
+
+            logger.error(f"Error invoking OpenAI model: {e}")
             return False, e
 
     def simplify_text(self, text, leichte_sprache=False):
