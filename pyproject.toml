@@ -25,6 +25,9 @@ dependencies = [
     "pydantic>=2.12.5",
 ]
 
+[tool.uv]
+exclude-newer = "7 days"
+
 [tool.hatch]
 version = "0.3.0"
 
