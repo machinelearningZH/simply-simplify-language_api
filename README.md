@@ -12,9 +12,9 @@
 
 ## Features
 
-This is a simplified version of our [Language Simplification Tool](https://github.com/machinelearningZH/simply-simplify-language).
+This is a simplified API version of our [Language Simplification Tool](https://github.com/machinelearningZH/simply-simplify-language).
 
-This API is built with [FastAPI](https://fastapi.tiangolo.com/) and provides language simplification via an LLM through HTTP endpoints. It can be used in production environments to integrate text simplification programmatically with other services.
+The API is built with [FastAPI](https://fastapi.tiangolo.com/) and simplifies German text through an LLM provider. It is intended for programmatic integration with other services.
 
 ## Installation
 
@@ -23,18 +23,10 @@ Requirements:
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) for package and environment management
 
-```bash
-# macOS and Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Windows
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
 ### Setup Project
 
 1. Clone this repository and change into the project directory
-2. Create a `.env` file with secrets:
+2. Create a `.env` file for secrets:
 
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-...
@@ -70,15 +62,15 @@ site:
 
 Environment variables with matching names, such as `MODEL_NAME`, `MAX_TOKENS`, and
 `CORS_ALLOWED_ORIGINS`, can override `config.yaml` values for deployments.
+Set `CONFIG_PATH` to load a different YAML file.
 
 4. Install dependencies using uv:
 
 ```bash
-# Create virtual environment and install dependencies
 uv sync
 ```
 
-Note: `uv run` automatically activates the virtual environment, so manual activation is not required.
+`uv run` automatically uses the project environment; manual activation is not required.
 
 ### Start the FastAPI server
 
@@ -119,7 +111,7 @@ Simplifies German text based on the provided payload.
 | ----------------- | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `data`            | `array[object]` | Yes      | Array of text objects to simplify. Each object must have a `text` field.                                                                |
 | `leichte_sprache` | `boolean`       | No       | If `true`, simplifies the text into [Leichte Sprache](https://en.wikipedia.org/wiki/Leichte_Sprache) (plain language). Default: `false` |
-| `model`           | `string`        | No       | LLM model to use via OpenRouter. The model must be listed in `ALLOWED_MODELS`.                                                           |
+| `model`           | `string`        | No       | LLM model to use. The model must be listed in `config.yaml` under `model.allowed_models`.                                                |
 
 #### Example Request
 
@@ -154,16 +146,17 @@ Simplifies German text based on the provided payload.
 ### Response Codes
 
 - **200 OK**: Successfully simplified the input data
-- **400 Bad Request**: Required fields are missing, the payload is incorrectly formatted, or the requested model is not allowed
+- **400 Bad Request**: Requested model is not allowed
 - **401 Unauthorized**: Bearer token is missing or invalid
-- **413 Payload Too Large**: Input text exceeds `MAX_CHARS_INPUT`
+- **413 Payload Too Large**: Input text exceeds `model.max_chars_input` from `config.yaml`
+- **422 Unprocessable Content**: Required fields are missing or the payload does not match the request schema
 - **502 Bad Gateway**: The model provider request failed or returned an invalid response
 - **500 Internal Server Error**: An internal error occurred during processing
 
 ### Notes
 
-- The `data` field must be an array of objects, where each object contains a `text` field
 - The endpoint requires an `Authorization: Bearer ...` header that matches `API_AUTH_TOKEN`
+- The `data` field must be a non-empty array of objects with a non-empty `text` field
 - HTML tags in the input text are preserved in the output
 - The `leichte_sprache` option uses specific prompts to generate text that follows [Leichte Sprache](https://en.wikipedia.org/wiki/Leichte_Sprache) guidelines for easier comprehension
 
@@ -173,9 +166,14 @@ Simplifies German text based on the provided payload.
 
 ## Feedback and Contributing
 
-We welcome feedback and contributions! [Email us](mailto:datashop@statistik.zh.ch) or open an issue or pull request.
+Feedback and contributions are welcome. [Email us](mailto:datashop@statistik.zh.ch) or open an issue or pull request.
 
-We use [`ruff`](https://docs.astral.sh/ruff/) for linting and formatting.
+Use [`ruff`](https://docs.astral.sh/ruff/) for linting and formatting:
+
+```bash
+uv run ruff format .
+uv run ruff check .
+```
 
 ## License
 
@@ -183,4 +181,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Disclaimer
 
-This software (the Software) incorporates the open-source model XXXXX (the Model) and has been developed according to and with the intent to be used under Swiss law. Please be aware that the EU Artificial Intelligence Act (EU AI Act) may, under certain circumstances, be applicable to your use of the Software. You are solely responsible for ensuring that your use of the Software as well as of the underlying Model complies with all applicable local, national and international laws and regulations. By using this Software, you acknowledge and agree (a) that it is your responsibility to assess which laws and regulations, in particular regarding the use of AI technologies, are applicable to your intended use and to comply therewith, and (b) that you will hold us harmless from any action, claims, liability or loss in respect of your use of the Software.
+This software (the Software) uses a configurable external language model provider and has been developed according to and with the intent to be used under Swiss law. Please be aware that the EU Artificial Intelligence Act (EU AI Act) may, under certain circumstances, be applicable to your use of the Software. You are solely responsible for ensuring that your use of the Software and the configured language model complies with all applicable local, national, and international laws and regulations. By using this Software, you acknowledge and agree that it is your responsibility to assess which laws and regulations apply to your intended use and to comply with them. You also agree to hold us harmless from any action, claim, liability, or loss related to your use of the Software.
