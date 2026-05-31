@@ -35,7 +35,7 @@ def create_openai_client(settings: Settings) -> OpenAI:
         default_headers["X-Title"] = settings.site_name
 
     return OpenAI(
-        base_url="https://openrouter.ai/api/v1",
+        base_url=settings.openrouter_base_url,
         api_key=settings.openrouter_api_key,
         default_headers=default_headers or None,
         timeout=settings.openrouter_timeout_seconds,

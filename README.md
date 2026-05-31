@@ -34,21 +34,44 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ### Setup Project
 
 1. Clone this repository and change into the project directory
-2. Create a `.env` file with your OpenRouter configuration:
+2. Create a `.env` file with secrets:
 
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-...
-MODEL_NAME=google/gemini-3-flash-preview
-ALLOWED_MODELS=google/gemini-3-flash-preview
-MAX_TOKENS=8096
-MAX_CHARS_INPUT=100000
 API_AUTH_TOKEN=replace-with-a-long-random-token
-CORS_ALLOWED_ORIGINS=https://your-client.example
-SITE_URL=https://your-site.com  # Optional
-SITE_NAME=Your App Name  # Optional
 ```
 
-3. Install dependencies using uv:
+3. Adjust operator-tunable settings in `config.yaml`:
+
+```yaml
+model:
+  name: google/gemini-3-flash-preview
+  provider_base_url: https://openrouter.ai/api/v1
+  allowed_models:
+    - google/gemini-3-flash-preview
+  max_tokens: 8096
+  max_chars_input: 100000
+  timeout_seconds: 60
+  max_retries: 2
+
+cors:
+  allowed_origins:
+    - https://your-client.example
+  allowed_methods:
+    - POST
+  allowed_headers:
+    - Authorization
+    - Content-Type
+
+site:
+  url: https://your-site.com
+  name: Your App Name
+```
+
+Environment variables with matching names, such as `MODEL_NAME`, `MAX_TOKENS`, and
+`CORS_ALLOWED_ORIGINS`, can override `config.yaml` values for deployments.
+
+4. Install dependencies using uv:
 
 ```bash
 # Create virtual environment and install dependencies

@@ -18,8 +18,8 @@ if settings.cors_allowed_origins:
         CORSMiddleware,
         allow_origins=list(settings.cors_allowed_origins),
         allow_credentials=True,
-        allow_methods=["POST"],
-        allow_headers=["Authorization", "Content-Type"],
+        allow_methods=list(settings.cors_allowed_methods),
+        allow_headers=list(settings.cors_allowed_headers),
     )
 
 
