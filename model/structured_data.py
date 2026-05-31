@@ -1,15 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SimplificationText(BaseModel):
-    text: str
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1)
 
 
 class SimplificationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     simplifications: list[SimplificationText]
 
 
 class Payload(BaseModel):
-    data: list[SimplificationText]
-    leichte_sprache: bool | None = False
-    model: str | None = None
+    model_config = ConfigDict(extra="forbid")
+
+    data: list[SimplificationText] = Field(min_length=1)
+    leichte_sprache: bool = False
+    model: str | None = Field(default=None, min_length=1)

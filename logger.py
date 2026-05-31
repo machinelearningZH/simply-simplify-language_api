@@ -1,16 +1,26 @@
+import json
 import logging
 
-# Configure the logging.
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler()  # Logs to console
-    ],
-)
 
-# Create and configure a logger instance.
+class JSONFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        payload = {
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "module": record.module,
+            "timestamp": self.formatTime(record, self.datefmt),
+        }
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        return json.dumps(payload, ensure_ascii=False)
+
+
 logger = logging.getLogger("fastapi_app")
+logger.setLevel(logging.INFO)
+logger.propagate = False
 
-# Optional: Adjust log level here if needed.
-logger.setLevel(logging.DEBUG)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(JSONFormatter())
+    logger.addHandler(handler)

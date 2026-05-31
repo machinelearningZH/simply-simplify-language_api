@@ -1,13 +1,7 @@
-from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
-from config import (
-    MAX_TOKENS,
-    MODEL_NAME,
-    OPENROUTER_API_KEY,
-    SITE_NAME,
-    SITE_URL,
-)
+from config import Settings, load_settings
+from logger import logger
 from model.structured_data import SimplificationResponse
 from simplifier.utils_prompts import (
     PROMPT_TEMPLATE_ES,
@@ -24,41 +18,49 @@ PROMPT_TEMPLATES = [
     PROMPT_TEMPLATE_LS,
 ]
 
-# ---------------------------------------------------------------
-# Constants
 
-load_dotenv()
+class ModelInvocationError(RuntimeError):
+    """Raised when the model provider request fails."""
 
-# Initialize OpenRouter client
-default_headers = {}
-if SITE_URL:
-    default_headers["HTTP-Referer"] = SITE_URL
-if SITE_NAME:
-    default_headers["X-Title"] = SITE_NAME
 
-openai_client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
-    default_headers=default_headers if default_headers else None,
-)
+class ModelResponseError(RuntimeError):
+    """Raised when the model provider returns an unusable response."""
 
-MAX_TOKENS = int(MAX_TOKENS)
 
-# Maximum number of characters for the input text.
-# This is way below the context window size of the GPT-4o model. Adjust to your needs.
-MAX_CHARS_INPUT = 100_000
+def create_openai_client(settings: Settings) -> OpenAI:
+    default_headers = {}
+    if settings.site_url:
+        default_headers["HTTP-Referer"] = settings.site_url
+    if settings.site_name:
+        default_headers["X-Title"] = settings.site_name
+
+    return OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=settings.openrouter_api_key,
+        default_headers=default_headers or None,
+        timeout=settings.openrouter_timeout_seconds,
+        max_retries=settings.openrouter_max_retries,
+    )
 
 
 class Simplifier:
-    def __init__(self):
-        self.model = MODEL_NAME
+    def __init__(self, settings: Settings | None = None, client: OpenAI | None = None) -> None:
+        self.settings = settings or load_settings()
+        self.model = self.settings.model_name
+        self.client = client or create_openai_client(self.settings)
 
-    def set_model(self, value):
+    def set_model(self, value: str) -> None:
         if not isinstance(value, str):
             raise ValueError("Model must be a string")
         self.model = value
 
-    def create_prompt(self, text, prompt_es, prompt_ls, leichte_sprache=False):
+    def create_prompt(
+        self,
+        text: str,
+        prompt_es: str,
+        prompt_ls: str,
+        leichte_sprache: bool = False,
+    ) -> tuple[str, str]:
         """Create prompt and system message."""
         if leichte_sprache:
             final_prompt = prompt_ls.format(
@@ -72,32 +74,33 @@ class Simplifier:
             system = SYSTEM_MESSAGE_ES
         return final_prompt, system
 
-    def invoke_model(self, text, leichte_sprache):
+    def invoke_model(self, text: str, leichte_sprache: bool) -> SimplificationResponse:
         """Invoke LLM via OpenRouter."""
         final_prompt, system = self.create_prompt(text, *PROMPT_TEMPLATES, leichte_sprache)
         try:
-            message = openai_client.beta.chat.completions.parse(
+            message = self.client.beta.chat.completions.parse(
                 model=self.model,
-                max_tokens=MAX_TOKENS,
+                max_tokens=self.settings.max_tokens,
                 messages=[
                     {"role": "system", "content": system},
                     {"role": "user", "content": final_prompt},
                 ],
                 response_format=SimplificationResponse,
             )
-            return True, message.choices[0].message.parsed
-        except Exception as e:
-            from logger import logger
+        except OpenAIError as exc:
+            logger.exception("Error invoking model via OpenRouter")
+            raise ModelInvocationError("OpenRouter request failed") from exc
 
-            logger.error(f"Error invoking model via OpenRouter: {e}")
-            return False, e
+        try:
+            parsed = message.choices[0].message.parsed
+        except (AttributeError, IndexError) as exc:
+            raise ModelResponseError("Model response did not include a parsed payload") from exc
 
-    def simplify_text(self, text, leichte_sprache=False):
+        if not isinstance(parsed, SimplificationResponse):
+            raise ModelResponseError("Model response did not match the expected schema")
+
+        return parsed
+
+    def simplify_text(self, text: str, leichte_sprache: bool = False) -> SimplificationResponse:
         """Simplify text."""
-        if len(text) > MAX_CHARS_INPUT:
-            return f"Error: Dein Text enthält {len(text)} Zeichen und ist zu lang für das System. Bitte kürze ihn auf {MAX_CHARS_INPUT} Zeichen oder weniger."
-        success, response = self.invoke_model(text, leichte_sprache)
-        if success:
-            return response
-        else:
-            return response
+        return self.invoke_model(text, leichte_sprache)

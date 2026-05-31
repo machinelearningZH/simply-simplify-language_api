@@ -1,28 +1,27 @@
+import json
+
 from model.structured_data import SimplificationResponse
 
 
 class DataConverter:
-    def __init__(self, payload, simplifier, model: str = None) -> None:
+    def __init__(self, payload, simplifier, model: str | None = None) -> None:
         self.simplifier = simplifier
 
         if model:
             simplifier.set_model(model)
 
-        self.json = payload.data
-        self.leichte_sprache = bool(payload.leichte_sprache)
+        self.input_text = json.dumps(
+            [item.model_dump() for item in payload.data],
+            ensure_ascii=False,
+        )
+        self.leichte_sprache = payload.leichte_sprache is True
 
-    def simplify(self):
-        results = self.simplifier.simplify_text(self.json, self.leichte_sprache)
+    def simplify(self) -> SimplificationResponse:
+        results = self.simplifier.simplify_text(self.input_text, self.leichte_sprache)
 
-        # Parse the JSON string into a Python dictionary.
         data = results.model_dump()
 
-        # Iterate over each item in the "simplifications" list.
         for item in data["simplifications"]:
-            # Replace ß with ss in the "text" key
             item["text"] = item["text"].replace("ß", "ss")
 
-        # Convert the updated dictionary back to a JSON string.
-        simplifications = SimplificationResponse.model_validate(data)
-
-        return simplifications
+        return SimplificationResponse.model_validate(data)

@@ -39,7 +39,11 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-...
 MODEL_NAME=google/gemini-3-flash-preview
+ALLOWED_MODELS=google/gemini-3-flash-preview
 MAX_TOKENS=8096
+MAX_CHARS_INPUT=100000
+API_AUTH_TOKEN=replace-with-a-long-random-token
+CORS_ALLOWED_ORIGINS=https://your-client.example
 SITE_URL=https://your-site.com  # Optional
 SITE_NAME=Your App Name  # Optional
 ```
@@ -59,21 +63,24 @@ Note: `uv run` automatically activates the virtual environment, so manual activa
 uv run uvicorn fastapi_app:app --reload
 ```
 
-### Testing the API
+### Running Tests
 
-A test script is provided to quickly test the API endpoint:
+Run the automated test suite locally:
 
 ```bash
-# In a separate terminal (while the server is running)
-uv run python test_api.py
+uv run pytest -v
 ```
 
-The test script will:
+### Testing the API Manually
 
-- Send sample German text to the simplification endpoint
-- Test both with and without `leichte_sprache` mode
-- Display the request payload and response
-- Show connection errors if the server isn't running
+Send requests with the bearer token configured in `API_AUTH_TOKEN`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/ \
+  -H "Authorization: Bearer $API_AUTH_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"data":[{"text":"Als Vernehmlassungsverfahren wird diejenige Phase bezeichnet."}]}'
+```
 
 ## API Reference
 
@@ -89,7 +96,7 @@ Simplifies German text based on the provided payload.
 | ----------------- | --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `data`            | `array[object]` | Yes      | Array of text objects to simplify. Each object must have a `text` field.                                                                |
 | `leichte_sprache` | `boolean`       | No       | If `true`, simplifies the text into [Leichte Sprache](https://en.wikipedia.org/wiki/Leichte_Sprache) (plain language). Default: `false` |
-| `model`           | `string`        | No       | LLM model to use via OpenRouter. Default: `openai/gpt-4o`. See [OpenRouter models](https://openrouter.ai/models)                        |
+| `model`           | `string`        | No       | LLM model to use via OpenRouter. The model must be listed in `ALLOWED_MODELS`.                                                           |
 
 #### Example Request
 
@@ -124,12 +131,16 @@ Simplifies German text based on the provided payload.
 ### Response Codes
 
 - **200 OK**: Successfully simplified the input data
-- **400 Bad Request**: Required fields are missing or the payload is incorrectly formatted
+- **400 Bad Request**: Required fields are missing, the payload is incorrectly formatted, or the requested model is not allowed
+- **401 Unauthorized**: Bearer token is missing or invalid
+- **413 Payload Too Large**: Input text exceeds `MAX_CHARS_INPUT`
+- **502 Bad Gateway**: The model provider request failed or returned an invalid response
 - **500 Internal Server Error**: An internal error occurred during processing
 
 ### Notes
 
 - The `data` field must be an array of objects, where each object contains a `text` field
+- The endpoint requires an `Authorization: Bearer ...` header that matches `API_AUTH_TOKEN`
 - HTML tags in the input text are preserved in the output
 - The `leichte_sprache` option uses specific prompts to generate text that follows [Leichte Sprache](https://en.wikipedia.org/wiki/Leichte_Sprache) guidelines for easier comprehension
 
