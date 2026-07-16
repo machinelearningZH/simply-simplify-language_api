@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "simply-simplify-language_api"
-version = "0.3.0"
+version = "0.4.0"
 description = 'Simple Simplify German Language - API version'
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 license = "MIT"
 
 
@@ -28,7 +28,7 @@ dependencies = [
 exclude-newer = "7 days"
 
 [tool.hatch]
-version = "0.3.0"
+version = "0.4.0"
 
 [tool.hatch.build.targets.wheel]
 packages = ["converter", "model", "simplifier"]
@@ -47,7 +47,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
