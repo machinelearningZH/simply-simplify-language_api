@@ -1,16 +1,31 @@
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
+from ipaddress import ip_address
 from pathlib import Path
+from string import Formatter
 from typing import Any
+from urllib.parse import urlsplit
 
 import yaml
 from dotenv import load_dotenv
 
-DEFAULT_CONFIG_PATH = Path("config.yaml")
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().with_name("config.yaml")
 
 
 class ConfigError(RuntimeError):
     """Raised when required runtime configuration is missing or invalid."""
+
+
+@dataclass(frozen=True)
+class PromptSettings:
+    system_message_es: str
+    system_message_ls: str
+    rules_es: str
+    rules_ls: str
+    rewrite_complete: str
+    template_es: str
+    template_ls: str
 
 
 @dataclass(frozen=True)
@@ -24,11 +39,14 @@ class Settings:
     cors_allowed_origins: tuple[str, ...]
     cors_allowed_methods: tuple[str, ...]
     cors_allowed_headers: tuple[str, ...]
+    cors_allow_credentials: bool
     site_url: str
     site_name: str
     max_chars_input: int
     openrouter_timeout_seconds: float
     openrouter_max_retries: int
+    log_level: str
+    prompts: PromptSettings
 
 
 def _required_env(name: str) -> str:
@@ -79,7 +97,7 @@ def _list_setting(
     if env_value:
         return env_value
 
-    value = _get_nested(config, path, ())
+    value = _get_nested(config, path)
     if value is None:
         return ()
     if not isinstance(value, list):
@@ -129,6 +147,83 @@ def _float_setting(
     if float_value <= minimum:
         raise ConfigError(f"{env_name} must be greater than {minimum}")
     return float_value
+
+
+def _bool_setting(
+    env_name: str,
+    config: dict[str, Any],
+    path: tuple[str, ...],
+    *,
+    default: bool,
+) -> bool:
+    raw_value = os.getenv(env_name)
+    value = raw_value if raw_value is not None else _get_nested(config, path, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes"}:
+            return True
+        if normalized in {"false", "0", "no"}:
+            return False
+    raise ConfigError(f"{env_name} must be a boolean")
+
+
+def _validate_provider_url(value: str) -> str:
+    parsed = urlsplit(value)
+    if not parsed.hostname:
+        raise ConfigError("OPENROUTER_BASE_URL must be a valid HTTPS URL")
+
+    try:
+        is_loopback = ip_address(parsed.hostname).is_loopback
+    except ValueError:
+        is_loopback = parsed.hostname == "localhost"
+    if parsed.scheme != "https" and not (parsed.scheme == "http" and is_loopback):
+        raise ConfigError("OPENROUTER_BASE_URL must use HTTPS unless it targets loopback")
+    if parsed.username or parsed.password:
+        raise ConfigError("OPENROUTER_BASE_URL must not contain credentials")
+    return value
+
+
+def _prompt_settings(config: dict[str, Any]) -> PromptSettings:
+    prompt_config = _get_nested(config, ("prompts",))
+    if not isinstance(prompt_config, Mapping):
+        raise ConfigError("prompts must be a mapping")
+
+    settings = PromptSettings(
+        system_message_es=_string_setting(
+            "PROMPT_SYSTEM_MESSAGE_ES", config, ("prompts", "system_message_es"), required=True
+        ),
+        system_message_ls=_string_setting(
+            "PROMPT_SYSTEM_MESSAGE_LS", config, ("prompts", "system_message_ls"), required=True
+        ),
+        rules_es=_string_setting("PROMPT_RULES_ES", config, ("prompts", "rules_es"), required=True),
+        rules_ls=_string_setting("PROMPT_RULES_LS", config, ("prompts", "rules_ls"), required=True),
+        rewrite_complete=_string_setting(
+            "PROMPT_REWRITE_COMPLETE", config, ("prompts", "rewrite_complete"), required=True
+        ),
+        template_es=_string_setting(
+            "PROMPT_TEMPLATE_ES", config, ("prompts", "template_es"), required=True
+        ),
+        template_ls=_string_setting(
+            "PROMPT_TEMPLATE_LS", config, ("prompts", "template_ls"), required=True
+        ),
+    )
+    required_fields = {"completeness", "prompt", "rules"}
+    for name, template in (
+        ("template_es", settings.template_es),
+        ("template_ls", settings.template_ls),
+    ):
+        try:
+            fields = {field for _, field, _, _ in Formatter().parse(template) if field}
+        except ValueError as exc:
+            raise ConfigError(f"prompts.{name} is not a valid format template") from exc
+        if fields != required_fields:
+            raise ConfigError(
+                f"prompts.{name} must contain only the placeholders "
+                "{completeness}, {rules}, and {prompt}"
+            )
+    return settings
 
 
 def _load_config_file(config_path: Path) -> dict[str, Any]:
@@ -189,15 +284,21 @@ def load_settings(
         config,
         ("cors", "allowed_headers"),
     )
-
-    return Settings(
-        openrouter_api_key=_required_env("OPENROUTER_API_KEY"),
-        openrouter_base_url=_string_setting(
+    openrouter_base_url = _validate_provider_url(
+        _string_setting(
             "OPENROUTER_BASE_URL",
             config,
             ("model", "provider_base_url"),
             required=True,
-        ),
+        )
+    )
+    log_level = _string_setting("LOG_LEVEL", config, ("logging", "level"), default="INFO").upper()
+    if log_level not in {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}:
+        raise ConfigError("LOG_LEVEL must be CRITICAL, ERROR, WARNING, INFO, or DEBUG")
+
+    return Settings(
+        openrouter_api_key=_required_env("OPENROUTER_API_KEY"),
+        openrouter_base_url=openrouter_base_url,
         model_name=model_name,
         max_tokens=_int_setting("MAX_TOKENS", config, ("model", "max_tokens")),
         api_auth_token=_required_env("API_AUTH_TOKEN"),
@@ -205,6 +306,12 @@ def load_settings(
         cors_allowed_origins=cors_allowed_origins,
         cors_allowed_methods=cors_allowed_methods,
         cors_allowed_headers=cors_allowed_headers,
+        cors_allow_credentials=_bool_setting(
+            "CORS_ALLOW_CREDENTIALS",
+            config,
+            ("cors", "allow_credentials"),
+            default=False,
+        ),
         site_url=_string_setting("SITE_URL", config, ("site", "url")),
         site_name=_string_setting("SITE_NAME", config, ("site", "name")),
         max_chars_input=_int_setting(
@@ -223,4 +330,6 @@ def load_settings(
             ("model", "max_retries"),
             minimum=0,
         ),
+        log_level=log_level,
+        prompts=_prompt_settings(config),
     )

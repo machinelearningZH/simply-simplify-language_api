@@ -1,31 +1,46 @@
 import secrets
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import load_settings
 from converter.data_converter import DataConverter
-from logger import logger
-from model.structured_data import Payload
+from logger import configure_logger, logger
+from model.structured_data import Payload, SimplificationResponse
 from simplifier.core import ModelInvocationError, ModelResponseError, Simplifier
 
 settings = load_settings()
-app = FastAPI()
+configure_logger(settings.log_level)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    simplifier = Simplifier(settings)
+    app.state.simplifier = simplifier
+    try:
+        yield
+    finally:
+        simplifier.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 if settings.cors_allowed_origins:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_allowed_origins),
-        allow_credentials=True,
+        allow_credentials=settings.cors_allow_credentials,
         allow_methods=list(settings.cors_allowed_methods),
         allow_headers=list(settings.cors_allowed_headers),
     )
 
 
 # Dependency injection.
-def get_simplifier() -> Simplifier:
-    return Simplifier(settings)
+def get_simplifier(request: Request) -> Simplifier:
+    return request.app.state.simplifier
 
 
 def require_api_token(authorization: Annotated[str | None, Header()] = None) -> None:
@@ -67,7 +82,10 @@ def validate_input_size(payload: Payload) -> None:
 
 
 @app.post("/", dependencies=[Depends(require_api_token)])
-def simplify(payload: Payload, simplifier: Simplifier = Depends(get_simplifier)):
+def simplify(
+    payload: Payload,
+    simplifier: Annotated[Simplifier, Depends(get_simplifier)],
+) -> SimplificationResponse:
     model = select_model(payload.model)
     validate_input_size(payload)
     logger.info("Simplifying request with model %s", model)

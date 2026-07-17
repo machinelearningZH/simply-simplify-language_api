@@ -1,22 +1,9 @@
 from openai import OpenAI, OpenAIError
+from pydantic import ValidationError
 
 from config import Settings, load_settings
 from logger import logger
 from model.structured_data import SimplificationResponse
-from simplifier.utils_prompts import (
-    PROMPT_TEMPLATE_ES,
-    PROMPT_TEMPLATE_LS,
-    REWRITE_COMPLETE,
-    RULES_ES,
-    RULES_LS,
-    SYSTEM_MESSAGE_ES,
-    SYSTEM_MESSAGE_LS,
-)
-
-PROMPT_TEMPLATES = [
-    PROMPT_TEMPLATE_ES,
-    PROMPT_TEMPLATE_LS,
-]
 
 
 class ModelInvocationError(RuntimeError):
@@ -46,40 +33,44 @@ def create_openai_client(settings: Settings) -> OpenAI:
 class Simplifier:
     def __init__(self, settings: Settings | None = None, client: OpenAI | None = None) -> None:
         self.settings = settings or load_settings()
-        self.model = self.settings.model_name
         self.client = client or create_openai_client(self.settings)
 
-    def set_model(self, value: str) -> None:
-        if not isinstance(value, str):
-            raise ValueError("Model must be a string")
-        self.model = value
+    def close(self) -> None:
+        self.client.close()
 
     def create_prompt(
         self,
         text: str,
-        prompt_es: str,
-        prompt_ls: str,
         leichte_sprache: bool = False,
     ) -> tuple[str, str]:
         """Create prompt and system message."""
         if leichte_sprache:
-            final_prompt = prompt_ls.format(
-                rules=RULES_LS, completeness=REWRITE_COMPLETE, prompt=text
+            final_prompt = self.settings.prompts.template_ls.format(
+                rules=self.settings.prompts.rules_ls,
+                completeness=self.settings.prompts.rewrite_complete,
+                prompt=text,
             )
-            system = SYSTEM_MESSAGE_LS
+            system = self.settings.prompts.system_message_ls
         else:
-            final_prompt = prompt_es.format(
-                rules=RULES_ES, completeness=REWRITE_COMPLETE, prompt=text
+            final_prompt = self.settings.prompts.template_es.format(
+                rules=self.settings.prompts.rules_es,
+                completeness=self.settings.prompts.rewrite_complete,
+                prompt=text,
             )
-            system = SYSTEM_MESSAGE_ES
+            system = self.settings.prompts.system_message_es
         return final_prompt, system
 
-    def invoke_model(self, text: str, leichte_sprache: bool) -> SimplificationResponse:
+    def invoke_model(
+        self,
+        text: str,
+        leichte_sprache: bool,
+        model: str | None = None,
+    ) -> SimplificationResponse:
         """Invoke LLM via OpenRouter."""
-        final_prompt, system = self.create_prompt(text, *PROMPT_TEMPLATES, leichte_sprache)
+        final_prompt, system = self.create_prompt(text, leichte_sprache)
         try:
             message = self.client.beta.chat.completions.parse(
-                model=self.model,
+                model=model or self.settings.model_name,
                 max_tokens=self.settings.max_tokens,
                 messages=[
                     {"role": "system", "content": system},
@@ -87,6 +78,9 @@ class Simplifier:
                 ],
                 response_format=SimplificationResponse,
             )
+        except ValidationError as exc:
+            logger.warning("Model response failed schema validation", exc_info=True)
+            raise ModelResponseError("Model response did not match the expected schema") from exc
         except OpenAIError as exc:
             logger.exception("Error invoking model via OpenRouter")
             raise ModelInvocationError("OpenRouter request failed") from exc
@@ -101,6 +95,11 @@ class Simplifier:
 
         return parsed
 
-    def simplify_text(self, text: str, leichte_sprache: bool = False) -> SimplificationResponse:
+    def simplify_text(
+        self,
+        text: str,
+        leichte_sprache: bool = False,
+        model: str | None = None,
+    ) -> SimplificationResponse:
         """Simplify text."""
-        return self.invoke_model(text, leichte_sprache)
+        return self.invoke_model(text, leichte_sprache, model)

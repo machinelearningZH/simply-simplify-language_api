@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from config import load_settings
+import pytest
+
+from config import DEFAULT_CONFIG_PATH, ConfigError, load_settings
 
 TUNABLE_ENV_VARS = (
     "MODEL_NAME",
@@ -13,9 +15,29 @@ TUNABLE_ENV_VARS = (
     "CORS_ALLOWED_ORIGINS",
     "CORS_ALLOWED_METHODS",
     "CORS_ALLOWED_HEADERS",
+    "CORS_ALLOW_CREDENTIALS",
     "SITE_URL",
     "SITE_NAME",
+    "LOG_LEVEL",
+    "PROMPT_SYSTEM_MESSAGE_ES",
+    "PROMPT_SYSTEM_MESSAGE_LS",
+    "PROMPT_RULES_ES",
+    "PROMPT_RULES_LS",
+    "PROMPT_REWRITE_COMPLETE",
+    "PROMPT_TEMPLATE_ES",
+    "PROMPT_TEMPLATE_LS",
 )
+
+PROMPT_CONFIG = """
+prompts:
+  system_message_es: System ES
+  system_message_ls: System LS
+  rules_es: Rules ES
+  rules_ls: Rules LS
+  rewrite_complete: Complete
+  template_es: "{completeness} {rules} {prompt}"
+  template_ls: "{completeness} {rules} {prompt}"
+"""
 
 
 def clear_tunable_env(monkeypatch) -> None:
@@ -45,10 +67,14 @@ cors:
   allowed_headers:
     - Authorization
     - Content-Type
+  allow_credentials: true
+logging:
+  level: WARNING
 site:
   url: https://site.example
   name: Test App
-""",
+        """
+        + PROMPT_CONFIG,
         encoding="utf-8",
     )
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
@@ -67,10 +93,13 @@ site:
     assert settings.cors_allowed_origins == ("https://client.example",)
     assert settings.cors_allowed_methods == ("POST",)
     assert settings.cors_allowed_headers == ("Authorization", "Content-Type")
+    assert settings.cors_allow_credentials is True
+    assert settings.log_level == "WARNING"
     assert settings.site_url == "https://site.example"
     assert settings.site_name == "Test App"
     assert settings.openrouter_api_key == "test-openrouter-key"
     assert settings.api_auth_token == "test-api-token"
+    assert settings.prompts.rules_es == "Rules ES"
 
 
 def test_environment_overrides_config_yaml(tmp_path: Path, monkeypatch) -> None:
@@ -94,7 +123,8 @@ cors:
   allowed_headers:
     - Authorization
     - Content-Type
-""",
+        """
+        + PROMPT_CONFIG,
         encoding="utf-8",
     )
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
@@ -119,3 +149,95 @@ cors:
         "Content-Type",
         "X-Trace-Id",
     )
+
+
+def test_default_config_path_is_independent_of_working_directory(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.delenv("CONFIG_PATH", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    settings = load_settings(load_env_file=False)
+
+    assert DEFAULT_CONFIG_PATH.is_absolute()
+    assert settings.model_name == "test-model"
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    (
+        "http://provider.example/api/v1",
+        "ftp://provider.example/api/v1",
+        "not-a-url",
+    ),
+)
+def test_rejects_insecure_or_invalid_provider_url(
+    tmp_path: Path, monkeypatch, base_url: str
+) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        f"""
+model:
+  name: test-model
+  provider_base_url: {base_url}
+  max_tokens: 512
+  max_chars_input: 12345
+  timeout_seconds: 12.5
+  max_retries: 3
+"""
+        + PROMPT_CONFIG,
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
+    monkeypatch.setenv("API_AUTH_TOKEN", "test-api-token")
+    clear_tunable_env(monkeypatch)
+
+    with pytest.raises(ConfigError, match="HTTPS"):
+        load_settings(config_path=config_path, load_env_file=False)
+
+
+def test_allows_http_provider_on_loopback(tmp_path: Path, monkeypatch) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+model:
+  name: test-model
+  provider_base_url: http://127.0.0.1:8080/v1
+  max_tokens: 512
+  max_chars_input: 12345
+  timeout_seconds: 12.5
+  max_retries: 3
+"""
+        + PROMPT_CONFIG,
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
+    monkeypatch.setenv("API_AUTH_TOKEN", "test-api-token")
+    clear_tunable_env(monkeypatch)
+
+    settings = load_settings(config_path=config_path, load_env_file=False)
+
+    assert settings.openrouter_base_url == "http://127.0.0.1:8080/v1"
+
+
+def test_rejects_provider_url_with_embedded_credentials(tmp_path: Path, monkeypatch) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+model:
+  name: test-model
+  provider_base_url: https://user:password@provider.example/v1
+  max_tokens: 512
+  max_chars_input: 12345
+  timeout_seconds: 12.5
+  max_retries: 3
+"""
+        + PROMPT_CONFIG,
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter-key")
+    monkeypatch.setenv("API_AUTH_TOKEN", "test-api-token")
+    clear_tunable_env(monkeypatch)
+
+    with pytest.raises(ConfigError, match="must not contain credentials"):
+        load_settings(config_path=config_path, load_env_file=False)

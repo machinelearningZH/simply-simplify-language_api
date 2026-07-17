@@ -1,15 +1,14 @@
 import json
 
-from model.structured_data import SimplificationResponse
+from model.structured_data import Payload, SimplificationResponse
+from simplifier.core import ModelResponseError, Simplifier
 
 
 class DataConverter:
-    def __init__(self, payload, simplifier, model: str | None = None) -> None:
+    def __init__(self, payload: Payload, simplifier: Simplifier, model: str) -> None:
         self.simplifier = simplifier
-
-        if model:
-            simplifier.set_model(model)
-
+        self.model = model
+        self.expected_result_count = len(payload.data)
         self.input_text = json.dumps(
             [item.model_dump() for item in payload.data],
             ensure_ascii=False,
@@ -17,11 +16,13 @@ class DataConverter:
         self.leichte_sprache = payload.leichte_sprache is True
 
     def simplify(self) -> SimplificationResponse:
-        results = self.simplifier.simplify_text(self.input_text, self.leichte_sprache)
-
-        data = results.model_dump()
-
-        for item in data["simplifications"]:
-            item["text"] = item["text"].replace("ß", "ss")
-
-        return SimplificationResponse.model_validate(data)
+        results = self.simplifier.simplify_text(
+            self.input_text,
+            self.leichte_sprache,
+            self.model,
+        )
+        if len(results.simplifications) != self.expected_result_count:
+            raise ModelResponseError(
+                "Model response item count did not match the request item count"
+            )
+        return results

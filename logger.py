@@ -17,10 +17,13 @@ class JSONFormatter(logging.Formatter):
 
 
 logger = logging.getLogger("fastapi_app")
-logger.setLevel(logging.INFO)
 logger.propagate = False
 
 if not logger.handlers:
     handler = logging.StreamHandler()
     handler.setFormatter(JSONFormatter())
     logger.addHandler(handler)
+
+
+def configure_logger(level: str) -> None:
+    logger.setLevel(level)

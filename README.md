@@ -3,11 +3,11 @@
 **Simply Simplify German Language -- API Version**
 
 ![GitHub License](https://img.shields.io/github/license/machinelearningZH/simply-simplify-language_api)
-[![PyPI - Python](https://img.shields.io/badge/python-v3.12+-blue.svg)](https://github.com/machinelearningZH/simply-simplify-language_api)
+[![PyPI - Python](https://img.shields.io/badge/python-v3.13+-blue.svg)](https://github.com/machinelearningZH/simply-simplify-language_api)
 [![GitHub Stars](https://img.shields.io/github/stars/machinelearningZH/simply-simplify-language_api.svg)](https://github.com/machinelearningZH/simply-simplify-language_api/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/machinelearningZH/simply-simplify-language_api.svg)](https://github.com/machinelearningZH/simply-simplify-language_api/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/machinelearningZH/simply-simplify-language_api.svg)](https://github.com/machinelearningZH/simply-simplify-language_api/pulls)
-[![Current Version](https://img.shields.io/badge/version-0.3-green.svg)](https://github.com/machinelearningZH/simply-simplify-language_api)
+[![Current Version](https://img.shields.io/badge/version-0.4-green.svg)](https://github.com/machinelearningZH/simply-simplify-language_api)
 <a href="https://github.com/astral-sh/ruff"><img alt="linting - Ruff" class="off-glb" loading="lazy" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
 
 ## Features
@@ -20,7 +20,7 @@ The API is built with [FastAPI](https://fastapi.tiangolo.com/) and simplifies Ge
 
 Requirements:
 
-- Python 3.12+
+- Python 3.13+
 - [uv](https://docs.astral.sh/uv/) for package and environment management
 
 ### Setup Project
@@ -54,14 +54,19 @@ cors:
   allowed_headers:
     - Authorization
     - Content-Type
+  allow_credentials: false
+
+logging:
+  level: INFO
 
 site:
   url: https://your-site.com
   name: Your App Name
 ```
 
+Language rules and prompt templates are also configured under `prompts` in `config.yaml`.
 Environment variables with matching names, such as `MODEL_NAME`, `MAX_TOKENS`, and
-`CORS_ALLOWED_ORIGINS`, can override `config.yaml` values for deployments.
+`CORS_ALLOWED_ORIGINS`, can override configuration values for deployments.
 Set `CONFIG_PATH` to load a different YAML file.
 
 4. Install dependencies using uv:
@@ -157,7 +162,7 @@ Simplifies German text based on the provided payload.
 
 - The endpoint requires an `Authorization: Bearer ...` header that matches `API_AUTH_TOKEN`
 - The `data` field must be a non-empty array of objects with a non-empty `text` field
-- HTML tags in the input text are preserved in the output
+- The model is instructed to preserve HTML tags exactly; clients handling sensitive markup should validate the returned HTML before rendering it
 - The `leichte_sprache` option uses specific prompts to generate text that follows [Leichte Sprache](https://en.wikipedia.org/wiki/Leichte_Sprache) guidelines for easier comprehension
 
 ## Project Team

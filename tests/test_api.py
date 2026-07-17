@@ -9,22 +9,61 @@ AUTH_HEADERS = {"Authorization": "Bearer test-api-token"}
 
 class FakeSimplifier:
     def __init__(self) -> None:
+        self.closed = False
         self.model: str | None = None
         self.received_text: str | None = None
         self.received_leichte_sprache: bool | None = None
 
-    def set_model(self, value: str) -> None:
-        self.model = value
-
-    def simplify_text(self, text: str, leichte_sprache: bool = False) -> SimplificationResponse:
+    def simplify_text(
+        self,
+        text: str,
+        leichte_sprache: bool = False,
+        model: str | None = None,
+    ) -> SimplificationResponse:
+        self.model = model
         self.received_text = text
         self.received_leichte_sprache = leichte_sprache
-        return SimplificationResponse(simplifications=[SimplificationText(text="Straße")])
+        return SimplificationResponse(simplifications=[SimplificationText(text="Strasse")])
+
+    def close(self) -> None:
+        self.closed = True
 
 
 class FailingSimplifier(FakeSimplifier):
-    def simplify_text(self, text: str, leichte_sprache: bool = False) -> SimplificationResponse:
+    def simplify_text(
+        self,
+        text: str,
+        leichte_sprache: bool = False,
+        model: str | None = None,
+    ) -> SimplificationResponse:
         raise ModelInvocationError("OpenRouter request failed")
+
+
+class MismatchedSimplifier(FakeSimplifier):
+    def simplify_text(
+        self,
+        text: str,
+        leichte_sprache: bool = False,
+        model: str | None = None,
+    ) -> SimplificationResponse:
+        return SimplificationResponse(
+            simplifications=[
+                SimplificationText(text="Erster Text."),
+                SimplificationText(text="Unerwarteter zweiter Text."),
+            ]
+        )
+
+
+class HtmlSimplifier(FakeSimplifier):
+    def simplify_text(
+        self,
+        text: str,
+        leichte_sprache: bool = False,
+        model: str | None = None,
+    ) -> SimplificationResponse:
+        return SimplificationResponse(
+            simplifications=[SimplificationText(text='<a href="/straße">Strasse</a>')]
+        )
 
 
 def client_with_simplifier(simplifier: FakeSimplifier) -> TestClient:
@@ -65,7 +104,7 @@ def test_rejects_total_input_text_over_limit() -> None:
     assert response.status_code == 413
 
 
-def test_simplifies_authorized_payload_and_postprocesses_sharp_s() -> None:
+def test_simplifies_authorized_payload_with_selected_model() -> None:
     simplifier = FakeSimplifier()
     client = client_with_simplifier(simplifier)
 
@@ -84,6 +123,44 @@ def test_simplifies_authorized_payload_and_postprocesses_sharp_s() -> None:
     assert simplifier.model == "other-model"
     assert simplifier.received_text == '[{"text": "Ein Text."}]'
     assert simplifier.received_leichte_sprache is True
+
+
+def test_preserves_html_attributes_exactly() -> None:
+    client = client_with_simplifier(HtmlSimplifier())
+
+    response = client.post(
+        "/",
+        headers=AUTH_HEADERS,
+        json={"data": [{"text": '<a href="/straße">Straße</a>'}]},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"simplifications": [{"text": '<a href="/straße">Strasse</a>'}]}
+
+
+def test_rejects_model_response_with_wrong_item_count() -> None:
+    client = client_with_simplifier(MismatchedSimplifier())
+
+    response = client.post(
+        "/",
+        headers=AUTH_HEADERS,
+        json={"data": [{"text": "Ein Text."}]},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Model provider response was invalid"
+
+
+def test_rejects_whitespace_only_text() -> None:
+    client = client_with_simplifier(FakeSimplifier())
+
+    response = client.post(
+        "/",
+        headers=AUTH_HEADERS,
+        json={"data": [{"text": "   "}]},
+    )
+
+    assert response.status_code == 422
 
 
 def test_model_invocation_errors_become_bad_gateway() -> None:
@@ -113,4 +190,21 @@ def test_cors_allows_configured_origin_without_wildcard() -> None:
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "https://client.example"
-    assert response.headers["access-control-allow-credentials"] == "true"
+    assert "access-control-allow-credentials" not in response.headers
+
+
+def test_lifespan_reuses_and_closes_simplifier(monkeypatch) -> None:
+    simplifier = FakeSimplifier()
+    monkeypatch.setattr(fastapi_app, "Simplifier", lambda settings: simplifier)
+
+    with TestClient(fastapi_app.app) as client:
+        response = client.post(
+            "/",
+            headers=AUTH_HEADERS,
+            json={"data": [{"text": "Ein Text."}]},
+        )
+        assert response.status_code == 200
+        assert fastapi_app.app.state.simplifier is simplifier
+        assert simplifier.closed is False
+
+    assert simplifier.closed is True
