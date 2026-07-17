@@ -10,12 +10,37 @@ if repo_root in sys.path:
     sys.path.remove(repo_root)
 sys.path.insert(0, repo_root)
 
-os.environ.setdefault("OPENROUTER_API_KEY", "test-openrouter-key")
-os.environ.setdefault("MODEL_NAME", "test-model")
-os.environ.setdefault("MAX_TOKENS", "256")
-os.environ.setdefault("API_AUTH_TOKEN", "test-api-token")
-os.environ.setdefault("ALLOWED_MODELS", "test-model,other-model")
-os.environ.setdefault("CORS_ALLOWED_ORIGINS", "https://client.example")
+# Application settings are loaded during test collection, before fixtures can isolate them.
+# Set the complete API test environment explicitly so a developer's shell or .env cannot leak in.
+os.environ.update(
+    {
+        "OPENROUTER_API_KEY": "test-openrouter-key",
+        "OPENROUTER_BASE_URL": "https://provider.example/api/v1",
+        "MODEL_NAME": "test-model",
+        "MAX_TOKENS": "256",
+        "MAX_CHARS_INPUT": "100000",
+        "OPENROUTER_TIMEOUT_SECONDS": "60",
+        "OPENROUTER_MAX_RETRIES": "2",
+        "API_AUTH_TOKEN": "test-api-token",
+        "ALLOWED_MODELS": "test-model,other-model",
+        "CORS_ALLOWED_ORIGINS": "https://client.example",
+        "CORS_ALLOWED_METHODS": "POST",
+        "CORS_ALLOWED_HEADERS": "Authorization,Content-Type",
+        "CORS_ALLOW_CREDENTIALS": "false",
+        "LOG_LEVEL": "INFO",
+    }
+)
+os.environ.pop("CONFIG_PATH", None)
+for name in (
+    "PROMPT_SYSTEM_MESSAGE_ES",
+    "PROMPT_SYSTEM_MESSAGE_LS",
+    "PROMPT_RULES_ES",
+    "PROMPT_RULES_LS",
+    "PROMPT_REWRITE_COMPLETE",
+    "PROMPT_TEMPLATE_ES",
+    "PROMPT_TEMPLATE_LS",
+):
+    os.environ.pop(name, None)
 
 
 @pytest.fixture(autouse=True)
